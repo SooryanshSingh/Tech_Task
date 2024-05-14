@@ -1,0 +1,29 @@
+html {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    flex-direction: row;
+}
+
+.container div {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.container div:hover {
+    background-color: #ddd;
+}
+
+p {
+    margin-top: 20px;
+    color: #666;
+}
