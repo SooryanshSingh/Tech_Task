@@ -11,17 +11,26 @@
     <h2>Unlock Your Potential, One Test at a Time!</h2>
     <div>
         <div>
-            <a href="{%url 'login'%}" class="button"></a>Login</a>
+            <a href="{% url 'button1' %}">Login</a>
             
         </div>
         <div>
-            <a>Test</a>           #add href later
+            <a href="{% url 'signup' %}">Register</a>
+
         </div>
         <div>
-            <a href="{% url 'admin:index' %}" class="button">Go to Django Admin</a></div>
+            <a href="{% url 'button2' %}">Logout</a>
+    
         </div>
         <div>
-            <a href="">About us</a></div>
+
+            <a>Test</a>          
+        </div>
+        <div>
+            <a href="{% url 'admin:index' %}">Go to Django Admin</a></div>
+        </div>
+        <div>
+            <a href="{% url 'about' %}">About us</a></div>
 
         </div>
     </div>
