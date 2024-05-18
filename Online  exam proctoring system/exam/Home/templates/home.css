@@ -1,8 +1,9 @@
 html {
     font-family: Arial, sans-serif;
 }
-h1{
-    color:Red
+header{
+    color:Red;
+    font-size: 30px;
 }
 h2{
     color:green

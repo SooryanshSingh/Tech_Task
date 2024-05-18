@@ -1,14 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-   <link rel="stylesheet" href="./login.css" />
-</head>
-<body>
-<h1>LOGIN PAGE</h1>
-<p>Kindly login with your creditionals to access the interface</p>
+{%extends "home.html"%}
+
+
+{% block title  %} Login {% endblock %}
+{% block css %}<link rel="stylesheet" href="./login.css" /> {% endblock %}
+{% block header %}LOGIN PAGE{% endblock %}
+{% block content %}<p>Kindly login with your creditionals to access the interface</p>
 <div class="container">
     <form action="" method="POST">
         {% csrf_token %}
@@ -21,6 +17,5 @@
         <button type="submit">Login</button>
     </form>
 </div>
+{% endblock %}
 
-</body>
-</html>

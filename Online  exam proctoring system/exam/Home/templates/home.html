@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Page</title>
-    <link rel="stylesheet" href="./home.css" />
+    <title>{% block title %}Home Page {% endblock %} </title>
+   
+    {% block css%} <link rel="stylesheet" href="./home.css" />{% endblock %}
 </head>
 <body>
-    <h1>Welcome to our test portal!</h1>
+
+    <header>
+        {% block header %}
+        Welcome to our test portal!
+    {% endblock %}</header>
+    {% block content%}  
+
     <h2>Unlock Your Potential, One Test at a Time!</h2>
-    <div>
+    <div class="container">
         <div>
             <a href="{% url 'button1' %}">Login</a>
             
@@ -18,24 +25,26 @@
             <a href="{% url 'signup' %}">Register</a>
 
         </div>
+        {%if user.is_authenticated %}
         <div>
             <a href="{% url 'button2' %}">Logout</a>
     
         </div>
+        {% endif %}
         <div>
 
             <a>Test</a>          
         </div>
         <div>
-            <a href="{% url 'admin:index' %}">Go to Django Admin</a></div>
+            <a href="{% url 'admin:index' %}">Go to Django Admin</a>
         </div>
         <div>
-            <a href="{% url 'about' %}">About us</a></div>
+            <a href="{% url 'about' %}">About us</a>
 
         </div>
     </div>
     <p>Kindly login with the correct creditionals to access the appropriate interface</p>
     <p>Companies can organise tests on our platform for  recruitment purposes or as per their needs in proper supervision of a proctor</p>
-    
+    {% endblock %}
 </body>
 </html>
