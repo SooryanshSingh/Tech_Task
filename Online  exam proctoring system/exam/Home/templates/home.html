@@ -1,25 +1,30 @@
+
+{% load static %}
 <!DOCTYPE html>
+
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Home Page {% endblock %} </title>
    
-    {% block css%} <link rel="stylesheet" href="./home.css" />{% endblock %}
+    {% block css%}<link rel="stylesheet" href="{%static './home.css'%}" />{% endblock %}
 </head>
 <body>
 
-    <header>
+    <h1>
         {% block header %}
         Welcome to our test portal!
-    {% endblock %}</header>
+    {% endblock %}</h1>
     {% block content%}  
 
     <h2>Unlock Your Potential, One Test at a Time!</h2>
     <div class="container">
+        {%if not user.is_authenticated %}
         <div>
             <a href="{% url 'button1' %}">Login</a>
-            
+        {% endif %}   
         </div>
         <div>
             <a href="{% url 'signup' %}">Register</a>

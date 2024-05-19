@@ -1,9 +1,9 @@
 {%extends "home.html"%}
-
+{% load static %}
 {% block title  %}About{% endblock  %}
 
 % block header  %}About me<% endblock  %}
-{% block css %}<link rel="stylesheet" href="./About.css" /> {% endblock %}
+{% block css %}<link rel="stylesheet" href="{%static './About.css'%}" /> {% endblock %}
 
 {% block content  %}
     <p>I am Sooryansh Singh

@@ -30,7 +30,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 LOGIN_REDIRECT_URL = '/'
-
+STATIC_URL = '/static/'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
