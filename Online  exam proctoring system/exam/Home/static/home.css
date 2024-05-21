@@ -1,19 +1,24 @@
-html {
+body {
     font-family: Arial, sans-serif;
+    background-color: #e6e6fa
+
 }
 h1{
     color:Red;
     font-size: 30px;
+    text-align: center;
 }
 h2{
-    color:green
+    color:red;
+    text-align: center;
 }
 p{
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-size: 30px;
-    color:crimson;
+ 
 }
 .container {
+    background-color:greenyellow;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -28,6 +33,14 @@ p{
     background-color: #f0f0f0;
     color: #333;
 }
+#A
+{
+width: 500px;
+margin-left:200px;
 
-
+}
+#B{
+    width: 450px;
+    margin-left:400px;
+}
 

@@ -1,11 +1,20 @@
+
+    
 h1{
     font-family: Arial, sans-serif;
     color: brown;
+    text-align: center;
+    font-size: 34px;;
 }
 p{
     font-family: 'Times New Roman', Times, serif;
-    color: darkblue;}
+    color: darkblue;
+text-align: center;
+font-size: 25px;
+}
 .container {
+   
+
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -29,29 +38,34 @@ p{
     text-align: center;
 }
 
-.container form label {
-    display: block;
-    margin-bottom: 5px;
-}
+
 
 .container form input {
     width: 250px;
-    padding: 8px;
     border: 1px solid #ccc;
-    border-radius: 5px;
     margin-bottom: 10px;
 }
 
 .container form button {
     width: 100%;
-    padding: 10px;
     background-color: #007bff;
     color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+   
+ 
 }
 
 .container form button:hover {
     background-color: #0056b3;
+}
+form label{ 
+    font-size: 20px;
+    
+
+}
+form button{
+    font-size: 20px;
+}
+
+img{
+    width: 300px;
 }

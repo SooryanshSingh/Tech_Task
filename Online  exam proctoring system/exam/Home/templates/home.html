@@ -24,12 +24,13 @@
         {%if not user.is_authenticated %}
         <div>
             <a href="{% url 'button1' %}">Login</a>
-        {% endif %}   
+          
         </div>
         <div>
             <a href="{% url 'signup' %}">Register</a>
 
         </div>
+        {% endif %} 
         {%if user.is_authenticated %}
         <div>
             <a href="{% url 'button2' %}">Logout</a>
@@ -48,8 +49,13 @@
 
         </div>
     </div>
-    <p>Kindly login with the correct creditionals to access the appropriate interface</p>
+    <p>Kindly login with the correct creditionals to access the appropriate interface</p>   
     <p>Companies can organise tests on our platform for  recruitment purposes or as per their needs in proper supervision of a proctor</p>
+
+
+    <img src="{% static '1st.jpg'%}" id="A" />
+    <img src="{% static '2nd.jpeg'%}" id="B" />
+    
     {% endblock %}
 </body>
 </html>
