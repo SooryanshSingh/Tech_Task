@@ -1,8 +1,31 @@
-header{
-    color:brown
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e6e6fa
+
 }
 
+h1{
+    color:Red;
+    font-size: 30px;
+    text-align: center;
+}
 p{
-    color:darkgreen;
-    font-weight: 30px;
+    color:brown;
+    font-size: 20px;
+}
+.container {
+    background-color :greenyellow;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    flex-direction: row; 
+}
+
+.container > div {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    color: #333;
 }

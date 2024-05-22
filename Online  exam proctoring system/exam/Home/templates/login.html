@@ -5,8 +5,13 @@
 {% block css %}<link rel="stylesheet" href="{%static './login.css'%}" />{% endblock %}
 {% block header %}LOGIN PAGE{% endblock %}
 {% block content %}<p>Kindly login with your creditionals to access the interface</p>
-<div class="upper">
+{% for message in messages %}
+    {% if message.message == "Invalid information. Please try again" %}
+        <p>{{ message.message }}</p>
+    {% endif %}
+{% endfor %}
 <div class="container">
+
 <img src="{%static 'lock.png'%}">
     <form action="login" method="POST">
         {% csrf_token %}
@@ -20,6 +25,6 @@
     </form>
 </div>
 
-</div>
+
 {% endblock %}
 

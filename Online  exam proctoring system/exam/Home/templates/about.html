@@ -2,12 +2,48 @@
 {% load static %}
 {% block title  %}About{% endblock  %}
 
-% block header  %}About me<% endblock  %}
+{% block header  %}About me{% endblock  %}
 {% block css %}<link rel="stylesheet" href="{%static './About.css'%}" /> {% endblock %}
 
 {% block content  %}
-    <p>I am Sooryansh Singh
-    </p>
+    
+    <div class="container">
+        <div>
+            <a href="{% url 'home' %}">Home</a>
+
+        </div>
+        {%if not user.is_authenticated %}
+        <div>
+            <a href="{% url 'button1' %}">Login</a>
+          
+        </div>
+        <div>
+            <a href="{% url 'signup' %}">Register</a>
+
+        </div>
+        {% endif %} 
+        {%if user.is_authenticated %}
+        <div>
+            <a href="{% url 'button2' %}">Logout</a>
+    
+        </div>
+        {% endif %}
+        <div>
+
+            <a>Test</a>          
+        </div>
+      
+        <div>
+            <a href="{% url 'about' %}">About us</a>
+
+        </div>
+    </div>
+
+    <p>I am Sooryansh Singh</p>
     <p>NIT Durgapur Computer Science and Engineering</p>
-    <p>I live in Varanasi Uttar Prdesh</p>
-    {% endblock  %}   
+    <p>I live in Varanasi Uttar Pradesh</p>
+
+
+    <img src="{% static 'logo.jpg'%}" id="A" />
+
+{% endblock  %}   

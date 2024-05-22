@@ -15,18 +15,14 @@ def login_user(request):
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            messages.success(request, "Login successful")
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request, "Invalid information...")
-            return redirect('login')
-    else:
-        return render(request, 'login.html', {})
+            messages.error(request, "Invalid information. Please try again")
+    return render(request, 'login.html', {})
 
 def logout_user(request):
     logout(request)
-    messages.success(request, "You were logged out")
     return redirect('home')
 
 def signup(request):
@@ -39,10 +35,8 @@ def signup(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, "Registered successfully")
                 return redirect('home')
             else:
-                messages.error(request, "Error during authentication")
                 return redirect('signup')
     else:
         form = CustomUserCreationForm()
