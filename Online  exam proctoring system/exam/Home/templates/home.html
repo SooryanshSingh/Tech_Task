@@ -19,7 +19,7 @@
     {% endblock %}</h1>
     {% block content%}  
 
-    <h2>Unlock Your Potential, One Test at a Time!</h2>
+    <h2>Serving every user needs</h2>
     <div class="container">
         {%if not user.is_authenticated %}
         <div>
@@ -47,16 +47,30 @@
 
         </div>
     </div>
-    <p>Kindly login with the correct creditionals to access the appropriate interface</p>   
-    <p>Companies can organise tests on our platform for  recruitment purposes or as per their needs in proper supervision of a proctor</p>
+    <div class="container2">
+    <div class="card">
+    <p>We're here to ensure every student get the best test experience possible <br>
+        nlock Your Potential, One Test at a Time!
+    </p>
 
 
     <img src="{% static '1st.jpg'%}" id="A" />
-    <img src="{% static '2nd.jpeg'%}" id="B" />
 
 
-    <p></p>
-    
+    </div>
+    <div class="card">
+        <p>our portal offer multiple advantages including</p>
+        <ol>
+            <li>Personalised test creation</li>
+            <li>Test under fair supervision of proctors</li>
+            <li>Chat system between students and proctors/li>
+
+        </ol>
+        <img src="{% static '2nd.jpeg'%}" id="B" />
+        
+
+    </div>
+</div>
     {% endblock %}
 </body>
 </html>
