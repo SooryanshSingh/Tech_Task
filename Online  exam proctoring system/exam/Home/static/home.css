@@ -1,47 +1,63 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #e6e6fa
+    background-image: url("{% static 'truebg.jpg' %}");
+   
+}
 
-}
-h1{
-    color:Red;
-    font-size: 30px;
+h1, h2, h3 {
+    color: red;
     text-align: center;
 }
-h2{
-    color:red;
-    text-align: center;
-}
-p{
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    font-size: 30px;
- 
-}
+
 .container {
-    background-color:greenyellow;
+    background-color:yellow;
+    padding: 20px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    flex-direction: row; 
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
 }
 
-.container > div {
-    padding: 10px;
+.who{
+    background-color:skyblue;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+.card {
+    width: 48%; 
+    margin-bottom: 20px;
+    padding: 20px;
     border: 1px solid #ccc;
     border-radius: 5px;
     background-color: #f0f0f0;
     color: #333;
+    box-sizing: border-box;
 }
-#A
-{
-width: 500px;
-margin-left:200px;
 
+#A{
+    width:500px;
 }
 #B{
-    width: 450px;
-    margin-left:400px;
+    width: 400px;
 }
 
+ul {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+.card p{
+    font-size: 25px;
+    color: blueviolet;
+}
+
+
+.card li{
+    font-size: 25px;
+    color: blueviolet;
+};
 

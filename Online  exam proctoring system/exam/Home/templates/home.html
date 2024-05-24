@@ -1,76 +1,57 @@
-
 {% load static %}
 <!DOCTYPE html>
-
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Home Page {% endblock %} </title>
-   
-    {% block css%}<link rel="stylesheet" href="{%static './home.css'%}" />{% endblock %}
+    {% block css%}<link rel="stylesheet" href="{% static 'home.css' %}" />{% endblock %}
 </head>
 <body>
-
     <h1>
         {% block header %}
         Welcome to our test portal!
-    {% endblock %}</h1>
-    {% block content%}  
-
+        {% endblock %}
+    </h1>
+    {% block content %}
     <h2>Serving every user needs</h2>
     <div class="container">
-        {%if not user.is_authenticated %}
+        {% if not user.is_authenticated %}
         <div>
             <a href="{% url 'button1' %}">Login</a>
-          
         </div>
         <div>
             <a href="{% url 'signup' %}">Register</a>
-
         </div>
-        {% endif %} 
-        {%if user.is_authenticated %}
+        {% endif %}
+        {% if user.is_authenticated %}
         <div>
             <a href="{% url 'button2' %}">Logout</a>
-    
         </div>
         {% endif %}
         <div>
-
-            <a>Test</a>          
+            <a>Test</a>
         </div>
-      
         <div>
             <a href="{% url 'about' %}">About us</a>
-
         </div>
     </div>
-    <div class="container2">
-    <div class="card">
-    <p>We're here to ensure every student get the best test experience possible <br>
-        nlock Your Potential, One Test at a Time!
-    </p>
-
-
-    <img src="{% static '1st.jpg'%}" id="A" />
-
-
+    <div class="who">
+        <div class="card">
+            <p>We're here to ensure every student gets the best test experience possible.<br>
+            Unlock Your Potential, One Test at a Time!</p>
+            <img src="{% static '1st.jpg' %}" id="A" />
+        </div>
+        <div class="card">
+            <p>Our portal offers multiple advantages including:</p>
+            <ol>
+                <li>Personalised test creation</li>
+                <li>Test under fair supervision of proctors</li>
+                <li>Chat system between students and proctors </li>
+            </ol>
+            <img src="{% static '2nd.jpeg' %}" id="B" />
+        </div>
     </div>
-    <div class="card">
-        <p>our portal offer multiple advantages including</p>
-        <ol>
-            <li>Personalised test creation</li>
-            <li>Test under fair supervision of proctors</li>
-            <li>Chat system between students and proctors/li>
-
-        </ol>
-        <img src="{% static '2nd.jpeg'%}" id="B" />
-        
-
-    </div>
-</div>
     {% endblock %}
 </body>
 </html>

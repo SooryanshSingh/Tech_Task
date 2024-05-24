@@ -108,6 +108,45 @@ def question_delete(request, exam_id, question_id):
     question = get_object_or_404(Question, pk=question_id, exam=exam)
     if request.method == 'POST':
         question.delete()
-        return redirect('exam_detail', exam_id=exam_id)
+        return redirect('', exam_id=exam_id)
     return render(request, '', {'question': question, 'exam': exam})
+
+
+def answer_create(request, exam_id, question_id):
+    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
+    question = get_object_or_404(Question, pk=question_id, exam=exam)
+    if request.method == 'POST':
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            answer = form.save(commit=False)
+            answer.question = question
+            answer.save()
+            return redirect('', exam_id=exam_id, question_id=question_id)
+    else:
+        form = AnswerForm()
+    return render(request, '', {'form': form, 'question': question, 'exam': exam})
+
+
+def answer_update(request, exam_id, question_id, answer_id):
+    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
+    question = get_object_or_404(Question, pk=question_id, exam=exam)
+    answer = get_object_or_404(Answer, pk=answer_id, question=question)
+    if request.method == 'POST':
+        form = AnswerForm(request.POST, instance=answer)
+        if form.is_valid():
+            form.save()
+            return redirect('', exam_id=exam_id, question_id=question_id)
+    else:
+        form = AnswerForm(instance=answer)
+    return render(request, '', {'form': form, 'question': question, 'exam': exam})
+
+
+def answer_delete(request, exam_id, question_id, answer_id):
+    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
+    question = get_object_or_404(Question, pk=question_id, exam=exam)
+    answer = get_object_or_404(Answer, pk=answer_id, question=question)
+    if request.method == 'POST':
+        answer.delete()
+        return redirect('', exam_id=exam_id, question_id=question_id)
+    return render(request, '', {'answer': answer, 'question': question, 'exam': exam})
 
