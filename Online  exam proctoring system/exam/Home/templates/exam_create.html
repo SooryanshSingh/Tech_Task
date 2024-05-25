@@ -1,0 +1,14 @@
+{% extends "home.html" %}
+{% load static %}
+{% block title  %}Add exams{% endblock  %}
+
+{% block header  %}Create an exam{% endblock  %}
+{% block css %}<link rel="stylesheet" href="{%static './exam_create.css'%}" /> {% endblock %}
+
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add</button>
+  </form>
+{% endblock %}

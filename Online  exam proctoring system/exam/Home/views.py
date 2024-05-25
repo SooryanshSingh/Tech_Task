@@ -6,7 +6,7 @@ from django.contrib import messages
 from .forms import CustomUserCreationForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .forms import QuestionForm, AnswerForm
+from .forms import QuestionForm, AnswerForm, ExamForm
 
 def home(request):
     return render(request, 'home.html')
@@ -51,31 +51,53 @@ def signup(request):
         form = CustomUserCreationForm()
         return render(request, 'signup.html', {'form': form})
 
+def exam_list(request):
+    exams = Exam.objects.all()
+    return render(request, 'exam_list.html', {'exams': exams})
+
+
+def exam_detail(request, exam_id):
+    exam = Exam.objects.get(pk=exam_id)
+    return render(request, 'exam_list.html', {'exam': exam})
 
 def exam_create(request):
     if request.method == 'POST':
-        form = forms.ModelForm(request.POST)
+        form = ExamForm(request.POST)
         if form.is_valid():
             exam = form.save(commit=False)
             exam.company = request.user
             exam.save()
-            return redirect('', exam_id=exam.pk)
+            return redirect('exam_list')
     else:
-        form = forms.ModelForm()
-    return render(request, '', {'form': form})
-
+        form = ExamForm()
+    return render(request, 'exam_create.html', {'form': form})
 def exam_update(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
     if request.method == 'POST':
-        form = forms.ModelForm(request.POST, instance=exam)
+        form = ExamForm(request.POST, instance=exam)
         if form.is_valid():
             exam = form.save(commit=False)
             exam.company = request.user
             exam.save()
-            return redirect('', exam_id=exam.pk)
+            return redirect('exam_list')
     else:
-        form = forms.ModelForm(instance=exam)
-    return render(request, '', {'form': form})
+        form = ExamForm(instance=exam)
+    return render(request, 'exam_update.html', {'form': form, 'exam': exam})
+def exam_delete(request, exam_id):
+    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
+    if request.method == 'POST':
+        exam.delete()
+        return redirect('exam_list')
+    return render(request, 'exam_list.html', {'exam': exam})
+
+
+def question_list(request):
+    questions = Question.objects.all()
+    return render(request, 'question_list.html', {'questions': questions})
+
+def question_detail(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'question_detail.html', {'question': question})
 
 
 def question_create(request, exam_id):

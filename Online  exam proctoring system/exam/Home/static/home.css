@@ -4,7 +4,7 @@ body {
    
 }
 
-h1, h2, h3 {
+h1, h2 {
     color: red;
     text-align: center;
 }
@@ -18,8 +18,15 @@ h1, h2, h3 {
     flex-wrap: wrap;
     margin-bottom: 30px;
 }
+.container > div {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    color: #333;
+}
 
-.who{
+.vre{
     background-color:skyblue;
     padding: 20px;
     display: flex;

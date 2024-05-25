@@ -6,7 +6,7 @@
 {% block css %}<link rel="stylesheet" href="{%static './About.css'%}" /> {% endblock %}
 
 {% block content  %}
-    
+    <h2>Welcome</h2>
     <div class="container">
         <div>
             <a href="{% url 'home' %}">Home</a>
@@ -38,12 +38,12 @@
 
         </div>
     </div>
-
-    <p>I am Sooryansh Singh</p>
-    <p>NIT Durgapur Computer Science and Engineering</p>
-    <p>I live in Varanasi Uttar Pradesh</p>
-
-
-    <img src="{% static 'logo.jpg'%}" id="A" />
-
+<div class="abc">   
+    <div class="card">
+        <p>I am Sooryansh Singh</p>
+        <p>NIT Durgapur Computer Science and Engineering</p>
+        <p>I live in Varanasi Uttar Pradesh</p>
+        <img src="{% static 'logo.jpg'%}" id="A" />
+    </div>
+</div>
 {% endblock  %}   

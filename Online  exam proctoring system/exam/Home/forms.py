@@ -2,7 +2,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Question, Answer
+from .models import Question, Answer, Exam
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
@@ -18,11 +18,13 @@ class CustomUserCreationForm(UserCreationForm):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['text']  # Include other fields if needed
-
+        fields = ['text']  #
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
-        fields = ['text', 'is_correct']  # Include other fields if needed
+        fields = ['text', 'is_correct']  
 
-
+class ExamForm(forms.ModelForm):
+    class Meta:
+        model = Exam
+        fields = ['title', 'description', 'duration']

@@ -10,6 +10,7 @@ h1{
 p{
     color: blue;
     font-size: 30px;
+    text-align: center;
 }
 
 form div{
@@ -20,3 +21,18 @@ form button{
     font-size: 25px;;
     
 }
+
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+   
+}
+
+.form {
+    width: 900px; 
+    padding: 20px; 
+    background-color: wheat; 
+    
+    text-align: left; }
