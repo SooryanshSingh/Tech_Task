@@ -1,3 +1,4 @@
+from django.views.decorators.cache import cache_control
 from .models import Exam,Exam, Question, Answer
 from django import forms
 from django.shortcuts import render, redirect,get_object_or_404
@@ -7,13 +8,14 @@ from .forms import CustomUserCreationForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .forms import QuestionForm, AnswerForm, ExamForm
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
     return render(request, 'home.html')
 
 def about(request):
     return render(request, 'about.html')
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def login_user(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('home'))                           
@@ -32,6 +34,7 @@ def logout_user(request):
     logout(request)
     return redirect('home')
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def signup(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('home'))                           
@@ -49,7 +52,7 @@ def signup(request):
                 return redirect('signup')
     else:
         form = CustomUserCreationForm()
-        return render(request, 'signup.html', {'form': form})
+    return render(request, 'signup.html', {'form': form})
 
 def exam_list(request):
     exams = Exam.objects.all()
@@ -71,6 +74,7 @@ def exam_create(request):
     else:
         form = ExamForm()
     return render(request, 'exam_create.html', {'form': form})
+
 def exam_update(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
     if request.method == 'POST':
@@ -85,19 +89,24 @@ def exam_update(request, exam_id):
     return render(request, 'exam_update.html', {'form': form, 'exam': exam})
 def exam_delete(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
-    if request.method == 'POST':
+    if request.method == 'POST': 
         exam.delete()
         return redirect('exam_list')
     return render(request, 'exam_list.html', {'exam': exam})
 
 
-def question_list(request):
-    questions = Question.objects.all()
-    return render(request, 'question_list.html', {'questions': questions})
+def question_list(request, exam_id=None):
+    if exam_id is not None:
+        questions = Question.objects.filter(exam_id=exam_id)
+    else:
+        questions = Question.objects.all()
+    return render(request, 'question_list.html', {'questions': questions, 'exam_id': exam_id})
+
+
 
 def question_detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'question_detail.html', {'question': question})
+    return render(request, 'question_list.html', {'question': question})
 
 
 def question_create(request, exam_id):
@@ -108,10 +117,12 @@ def question_create(request, exam_id):
             question = form.save(commit=False)
             question.exam = exam
             question.save()
-            return redirect('', exam_id=exam_id)
+            return redirect('question_list', exam_id=exam_id)
     else:
         form = QuestionForm()
-    return render(request, '', {'form': form, 'exam': exam})
+    return render(request, 'question_create.html', {'form': form, 'exam': exam}) 
+
+
 
 def question_update(request, exam_id, question_id):
     exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
@@ -120,18 +131,30 @@ def question_update(request, exam_id, question_id):
         form = QuestionForm(request.POST, instance=question)
         if form.is_valid():
             form.save()
-            return redirect('', exam_id=exam_id)
+            return redirect('question_list', exam_id=exam_id)
     else:
         form = QuestionForm(instance=question)
-    return render(request, '', {'form': form, 'exam': exam})
+    return render(request, 'question_update.html', {'question': question,'form': form, 'exam': exam, 'question_id': question_id})
 
 def question_delete(request, exam_id, question_id):
     exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
     question = get_object_or_404(Question, pk=question_id, exam=exam)
     if request.method == 'POST':
         question.delete()
-        return redirect('', exam_id=exam_id)
-    return render(request, '', {'question': question, 'exam': exam})
+        return redirect('question_list', exam_id=exam_id)
+    return render(request, 'question_list.html', {'question': question, 'exam': exam})
+
+
+
+def answer_list(request, exam_id, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    answers = Answer.objects.filter(question=question)
+    return render(request, 'answer_list.html', {'answers': answers, 'question': question})
+
+
+def answer_detail(request, exam_id, question_id, answer_id):
+    answer = get_object_or_404(Answer, pk=answer_id)
+    return render(request, 'answer_list.html', {'answer': answer})
 
 
 def answer_create(request, exam_id, question_id):
@@ -143,10 +166,10 @@ def answer_create(request, exam_id, question_id):
             answer = form.save(commit=False)
             answer.question = question
             answer.save()
-            return redirect('', exam_id=exam_id, question_id=question_id)
+            return redirect('answer_list', exam_id=exam_id, question_id=question_id)
     else:
         form = AnswerForm()
-    return render(request, '', {'form': form, 'question': question, 'exam': exam})
+    return render(request, 'answer_create.html', {'form': form, 'question': question, 'exam': exam})
 
 
 def answer_update(request, exam_id, question_id, answer_id):
@@ -157,10 +180,10 @@ def answer_update(request, exam_id, question_id, answer_id):
         form = AnswerForm(request.POST, instance=answer)
         if form.is_valid():
             form.save()
-            return redirect('', exam_id=exam_id, question_id=question_id)
+            return redirect('answer_update', exam_id=exam_id, question_id=question_id)
     else:
         form = AnswerForm(instance=answer)
-    return render(request, '', {'form': form, 'question': question, 'exam': exam})
+    return render(request, 'answer_list.html', {'form': form, 'question': question, 'exam': exam})
 
 
 def answer_delete(request, exam_id, question_id, answer_id):
@@ -169,6 +192,7 @@ def answer_delete(request, exam_id, question_id, answer_id):
     answer = get_object_or_404(Answer, pk=answer_id, question=question)
     if request.method == 'POST':
         answer.delete()
-        return redirect('', exam_id=exam_id, question_id=question_id)
-    return render(request, '', {'answer': answer, 'question': question, 'exam': exam})
+        return redirect('answer_list', exam_id=exam_id, question_id=question_id)
+    return render(request, 'answer_list.html', {'answer': answer, 'question': question, 'exam': exam})
+
 

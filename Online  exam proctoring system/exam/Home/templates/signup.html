@@ -11,31 +11,43 @@
     <h1>Register</h1>
     <p>Enter the following details in order to register to the website</p>
     <div class="container">
-    <div class="form">
-
-    <form action="{% url 'signup' %}" method="POST">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        <div class="forms">
-            {{ form.username.label_tag }}
-            {{ form.username }}
+        <div class="form">
+            <form action="{% url 'signup' %}" method="POST">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="forms">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                    {{ form.username.errors }}
+                </div>
+                <div class="forms">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                    {{ form.email.errors }}
+                </div>
+                <div class="forms">
+                    {{ form.password1.label_tag }}
+                    {{ form.password1 }}
+                    {{ form.password1.errors }}
+                </div>
+                <div class="forms">
+                    {{ form.password2.label_tag }}
+                    {{ form.password2 }}
+                    {{ form.password2.errors }}
+                </div>
+                <div class="forms">
+                    {{ form.role.label_tag }}
+                    <select name="role" id="id_role">
+                        {% for value, label in form.role.field.choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    {{ form.role.errors }}
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <br>
+            </form>
         </div>
-        <div class="forms">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-        </div>
-        <div class="forms">
-            {{ form.password1.label_tag }}
-            {{ form.password1 }}
-        </div>
-        <div class="forms">
-            {{ form.password2.label_tag }}
-            {{ form.password2 }}
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
     </div>
-    </div>
-
 </body>
 </html>

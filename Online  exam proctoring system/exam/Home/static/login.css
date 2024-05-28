@@ -1,4 +1,11 @@
-
+body {
+    background-image: url("./bg123.jpg");
+    background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat; 
+    height: 100vh; 
+    margin: 0; 
+    padding: 0; }
     
 h1{
     font-family: Arial, sans-serif;
@@ -8,7 +15,7 @@ h1{
 }
 p{
     font-family: 'Times New Roman', Times, serif;
-    color: darkblue;
+    color: white;
 text-align: center;
 font-size: 25px;
 }

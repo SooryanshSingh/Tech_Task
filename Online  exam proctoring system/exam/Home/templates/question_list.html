@@ -1,0 +1,21 @@
+{% extends "home.html" %}
+{% block title %}List of Questions{% endblock %}
+{% block header %}Questions List{% endblock %}
+{% block content %}
+  <h2>Questions</h2>
+  <ul>
+    {% for question in questions %}
+      <li>
+        <h3>{{ question.text }}</h3>
+        <p>Type: {{ question.get_question_type_display }}</p>
+        <p>Exam: {{ question.exam.title }}</p>
+        <form method="post" action="{% url 'question_delete' exam_id question_id %}">
+          {% csrf_token %}
+          <button type="submit">Delete</button>
+        </form>
+        <a href="{% url 'question_update' exam_id question_id %}">Update</a>
+      </li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'question_create' exam_id %}">Create a new question</a>
+{% endblock %}

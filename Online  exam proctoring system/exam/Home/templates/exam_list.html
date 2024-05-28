@@ -2,28 +2,29 @@
 {% load static %}
 {% block title %}Details of exams{% endblock %}
 {% block header %}View your exams{% endblock %}
-{% block css %}<link rel="stylesheet" href="{% static './exam_list.css' %}" />{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static './exam_list.css' %}" />
+{% endblock %}
 {% block content %}
-  <h1>Exams</h1>
+  <h2>Exams</h2>
+  {% if not user.is_authenticated %}
+    <p>Please login to continue</p>
+  {% endif %}  
+  {% if user.is_authenticated %}
+  <h3>List of exams</h3>
   <ul>
     {% for exam in exams %}
       <li>
-        <a href="{% url 'exam_detail' exam.id %}">{{ exam.title }}</a>
-        <form method="post" action="{% url 'exam_delete' exam.id %}" >
+        <span class="exam-title">{{ exam.title }}</span>
+        <form class="form" method="post" action="{% url 'exam_delete' exam.id %}">
           {% csrf_token %}
           <button type="submit">Delete</button>
         </form>
-        {% if exam.id == form.instance.id %}
-          <form method="post" action="{% url 'exam_update' exam.id %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Save</button>
-          </form>
-        {% else %}
-          <a href="{% url 'exam_update' exam.id %}">Update</a>
-        {% endif %}
+        <a href="{% url 'exam_update' exam.id %}">Update</a>
+        <a href="{% url 'question_list' exam.id%}">View Questions</a> 
       </li>
     {% endfor %}
   </ul>
-  <a href="{%url 'exam_create'%}">Create</a>
+  <a href="{% url 'exam_create' %}">Create a new exam</a>
+  {% endif %}
 {% endblock %}

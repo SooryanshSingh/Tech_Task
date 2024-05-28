@@ -1,0 +1,16 @@
+{% extends "home.html" %}
+{% block title %}Create Question{% endblock %}
+{% block header %}Create a Question{% endblock %}
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+    <label for="text">Question Text:</label>
+    <textarea id="text" name="text" required></textarea><br>
+    <label for="question_type">Question Type:</label>
+    <select id="question_type" name="question_type" required>
+      <option value="Objective">Objective</option>
+      <option value="Subjective">Subjective</option>
+    </select><br>
+    <button type="submit">Create</button>
+  </form>
+{% endblock %}
