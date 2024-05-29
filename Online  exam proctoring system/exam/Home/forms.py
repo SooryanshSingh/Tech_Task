@@ -20,10 +20,12 @@ class CustomUserCreationForm(UserCreationForm):
             self.fields[fieldname].help_text = None
 
 
+
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['text']  #
+        fields = ['text', 'question_type']
+
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer

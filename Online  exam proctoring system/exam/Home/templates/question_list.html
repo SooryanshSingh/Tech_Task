@@ -9,11 +9,13 @@
         <h3>{{ question.text }}</h3>
         <p>Type: {{ question.get_question_type_display }}</p>
         <p>Exam: {{ question.exam.title }}</p>
-        <form method="post" action="{% url 'question_delete' exam_id question_id %}">
+        <form method="post" action="{% url 'question_delete' exam_id question.id %}">
           {% csrf_token %}
           <button type="submit">Delete</button>
         </form>
-        <a href="{% url 'question_update' exam_id question_id %}">Update</a>
+        <a href="{% url 'question_update' exam_id question.id %}">Update</a>
+        <a href="{% url 'answer_list' exam_id question.id  %}">View Answer</a> 
+
       </li>
     {% endfor %}
   </ul>

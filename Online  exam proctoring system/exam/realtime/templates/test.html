@@ -6,35 +6,39 @@
 <body>
     <h1>{{ exam.title }}</h1>
     <p>{{ exam.description }}</p>
-    <form method="post" action="{% url 'submit_answers' exam.id %}">
+    <form method="post" action="{% url 'test_with_chat' exam.id %}">
         {% csrf_token %}
         <div style="display: flex;">
-            <div style="flex: 1;">
+            <div style="flex: 1; padding: 10px;">
                 <h2>Questions:</h2>
                 <ul>
                     {% for question in questions %}
-                        <li>{{ question.text }}</li>
-                        {% if question.question_type == 'Objective' %}
-                            <ul>
-                                {% for answer in question.answers.all %}
-                                    <li>
-                                        <input type="radio" name="answer_{{ question.id }}" value="{{ answer.id }}">
-                                        {{ answer.text }}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <textarea name="answer_{{ question.id }}"></textarea>
-                        {% endif %}
+                        <li>
+                            <strong>{{ question.text }}</strong>
+                            {% if question.question_type == 'Objective' %}
+                                <ul>
+                                    {% for answer in question.answers.all %}
+                                        <li>
+                                            <label>
+                                                <input type="radio" name="answer_{{ question.id }}" value="{{ answer.id }}">
+                                                {{ answer.text }}
+                                            </label>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <textarea name="answer_{{ question.id }}" rows="4" cols="50"></textarea>
+                            {% endif %}
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
-            <div style="flex: 1;">
+            <div style="flex: 1; padding: 10px; border-left: 1px solid #ccc;">
                 <h2>Chat with Proctor</h2>
-                <div id="chat-log" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc;"></div>
-                <input id="chat-message-input" type="text" size="100">
+                <div id="chat-log" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px; margin-bottom: 10px;"></div>
+                <input id="chat-message-input" type="text" size="100" placeholder="Type your message...">
                 <input id="chat-message-submit" type="button" value="Send">
-            </div>
+                k </div>
         </div>
         <input type="submit" value="Submit Answers">
     </form>
@@ -45,8 +49,9 @@
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').innerHTML += '<div>' + data.message + '</div>';
-        };
+            const chatLog = document.querySelector('#chat-log');
+            chatLog.innerHTML += '<div>' + data.message + '</div>';
+            chatLog.scrollTop = chatLog.scrollHeight;
 
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
@@ -62,11 +67,13 @@
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
+            if (message.trim()) { 
+                chatSocket.send(JSON.stringify({
+                    'message': message
+                }));
+                messageInputDom.value = '';
+            }
         };
     </script>
 </body>
-</html>
+</html

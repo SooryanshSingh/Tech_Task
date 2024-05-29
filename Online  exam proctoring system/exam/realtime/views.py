@@ -23,7 +23,7 @@ def test_with_chat(request, exam_id):
                 )
         return redirect('feedback.html')  
     
-    return render(request, 'realtime/test_with_chat.html', {
+    return render(request, 'test.html', {
         'exam': exam,
         'questions': questions,
         'room_name': exam_id, 

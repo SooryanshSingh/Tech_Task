@@ -14,9 +14,12 @@ urlpatterns = [
     path('exams/<int:exam_id>/update/', views.exam_update, name='exam_update'),  
     path('exams/<int:exam_id>/delete/', views.exam_delete, name='exam_delete'), 
     path('exams/questions/<int:exam_id>/', views.question_list, name='question_list'),
-    path('exams//questions/<int:exam_id>/create/', views.question_create, name='question_create'), 
+    path('exams/questions/<int:exam_id>/create/', views.question_create, name='question_create'), 
     path('exams/questions/<int:exam_id>/update/<int:question_id>/', views.question_update, name='question_update'),  
     path('exams/questions/<int:exam_id>/delete/<int:question_id>/', views.question_delete, name='question_delete'), 
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/', views.answer_list, name='answer_list'),
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/<int:answer_id>/', views.answer_detail, name='answer_detail'),
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/create', views.answer_create, name='answer_create'),
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/<int:answer_id>/update/', views.answer_update, name='answer_update'),
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/<int:answer_id>/delete/', views.answer_delete, name='answer_delete'),
 ]
-
-

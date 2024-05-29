@@ -1,0 +1,23 @@
+{% extends "home.html" %}
+{% load static %}
+{% block title %}Answers{% endblock %}
+{% block header %}View Answers{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static './answer_list.css' %}" />
+{% endblock %}
+{% block content %}
+  <h2>Answers for Question: {{ question.text }}</h2>
+  <ul>
+    {% for answer in answers %}
+      <li>
+        <span class="answer-text">{{ answer.text }}</span>
+        <form class="form" method="post" action="{% url 'answer_delete' exam.id question.id answer.id %}">
+          {% csrf_token %}
+          <button type="submit">Delete</button>
+        </form>
+        <a href="{% url 'answer_update' exam.id question.id answer.id %}">Update</a>
+      </li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'answer_create' exam_id question.id %}">Add a new answer</a>
+{% endblock %}

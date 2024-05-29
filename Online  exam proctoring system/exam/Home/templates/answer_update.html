@@ -1,0 +1,15 @@
+{% extends "home.html" %}
+{% load static %}
+{% block title %}Update Answer{% endblock %}
+{% block header %}Update Answer{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static './answer_update.css' %}" />
+{% endblock %}
+{% block content %}
+  <h2>Update Answer for Question: {{ question.text }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+  </form>
+{% endblock %}
