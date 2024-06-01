@@ -6,25 +6,38 @@
 <link rel="stylesheet" href="{% static './exam_list.css' %}" />
 {% endblock %}
 {% block content %}
-  <h2>Exams</h2>
+  <h2>List of exams</h2>
   {% if not user.is_authenticated %}
     <p>Please login to continue</p>
   {% endif %}  
   {% if user.is_authenticated %}
-  <h3>List of exams</h3>
-  <ul>
-    {% for exam in exams %}
-      <li>
-        <span class="exam-title">{{ exam.title }}</span>
-        <form class="form" method="post" action="{% url 'exam_delete' exam.id %}">
-          {% csrf_token %}
-          <button type="submit">Delete</button>
-        </form>
-        <a href="{% url 'exam_update' exam.id %}">Update</a>
-        <a href="{% url 'question_list' exam.id%}">View Questions</a> 
-      </li>
-    {% endfor %}
-  </ul>
-  <a href="{% url 'exam_create' %}">Create a new exam</a>
+    {% if user.groups.all.0.name == 'Company' %}
+      <ul>
+        {% for exam in exams %}
+          <li>
+            <span class="exam-title">{{ exam.title }}</span>
+            <form class="form" method="post" action="{% url 'exam_delete' exam.id %}">
+              {% csrf_token %}
+              <button type="submit">Delete</button>
+            </form>
+            
+            <a href="{% url 'exam_update' exam.id %}">Update</a>
+            
+            <a href="{% url 'question_list' exam.id%}">View Questions</a> 
+          </li>
+        {% endfor %}
+      </ul>
+      <a href="{% url 'exam_create' %}">Create a new exam</a>
+    {% else %}
+      <p>You are not authorized to view this page.</p>
+    {% endif %}
+  {% endif %}
+  
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="error-message" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
   {% endif %}
 {% endblock %}

@@ -6,7 +6,7 @@
 <body>
     <h1>{{ exam.title }}</h1>
     <p>{{ exam.description }}</p>
-    <form method="post" action="{% url 'test_with_chat' exam.id %}">
+    <form id="exam-form" method="post" action="{% url 'test_with_chat' exam.id %}">
         {% csrf_token %}
         <div style="display: flex;">
             <div style="flex: 1; padding: 10px;">
@@ -36,22 +36,23 @@
             <div style="flex: 1; padding: 10px; border-left: 1px solid #ccc;">
                 <h2>Chat with Proctor</h2>
                 <div id="chat-log" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px; margin-bottom: 10px;"></div>
-                <input id="chat-message-input" type="text" size="100" placeholder="Type your message...">
-                <input id="chat-message-submit" type="button" value="Send">
-                k </div>
+                <input id="chat-message-input" type="text" name="chat_message" size="100" placeholder="Type your message...">
+                <input id="chat-message-submit" type="submit" value="Send">
+            </div>
         </div>
         <input type="submit" value="Submit Answers">
     </form>
     <script>
         const roomName = "{{ room_name }}";
         const chatSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+            'ws://' + window.location.hostname + ':8001/ws/chat/' + roomName + '/');
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             const chatLog = document.querySelector('#chat-log');
             chatLog.innerHTML += '<div>' + data.message + '</div>';
             chatLog.scrollTop = chatLog.scrollHeight;
+        };
 
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
@@ -65,6 +66,7 @@
         };
 
         document.querySelector('#chat-message-submit').onclick = function(e) {
+            e.preventDefault();
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             if (message.trim()) { 
@@ -76,4 +78,4 @@
         };
     </script>
 </body>
-</html
+</html>

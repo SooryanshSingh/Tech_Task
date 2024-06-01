@@ -2,13 +2,15 @@ body{
     background-color: #e6e6fa}
 
 h1{
-    color:red;
+    color: rgb(240, 197, 5);
     font-size: 35px;
     text-align: center;
+    font-family: 'Brush Script MT', cursive;
+    font-weight: bold;
 }
 
 p{
-    color: yellow;
+    color: white;
     font-size: 30px;
     text-align: center;
 }
@@ -33,9 +35,10 @@ form button{
 .form {
     width: 900px; 
     padding: 20px; 
-    background-color: wheat; 
-    
-    text-align: left; }
+    background-image: linear-gradient(to bottom right, #87CEEB 40%, #FFD700); 
+        border: 5px solid black;
+    text-align: center;
+    align-self: center; }
 
 img {
     position: absolute;
@@ -47,7 +50,7 @@ img {
 
 
 body {
-    background-image: url("./bg123.jpg");
+    background-image: url("./bg.webp");
     background-size: cover; 
     background-position: center; 
     background-repeat: no-repeat; 

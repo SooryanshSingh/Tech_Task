@@ -1,5 +1,5 @@
 body {
-    background-image: url("./bg123.jpg");
+    background-image: url("./bg.webp");
     background-size: cover; 
     background-position: center; 
     background-repeat: no-repeat; 
@@ -10,26 +10,24 @@ body {
 
 
 
-h1{
-    color : white;
+h1,h2{
+    color: white;
     text-align: center;
+    font-family: 'Brush Script MT', cursive;
+    font-weight: bold;
 }
-h2{
-    text-align:center;
-    color: White;
-}
+
 p{
     color:brown;
     font-size: 20px;
 }
 .container {
-    background-color :yellow;
-    display: flex;
+    background-image: linear-gradient(135deg, #9be15d, #f3d250);    display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    flex-direction: row; 
-    margin-bottom: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    border: 2px solid #000000;
 }
 
 .container > div {
@@ -55,7 +53,7 @@ p{
     width: 48%; 
     margin-bottom: 20px;
     padding: 20px;
-    border: 1px solid #ccc;
+    border: 5px solid black;
     border-radius: 5px;
     background-color: #f0f0f0;
     color: #333;

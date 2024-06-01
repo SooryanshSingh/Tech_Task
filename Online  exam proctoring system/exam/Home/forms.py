@@ -2,12 +2,12 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import CustomUser,Exam,Question,Answer
+from .models import Exam,Question,Answer
 class CustomUserCreationForm(UserCreationForm):
     ROLE_CHOICES = (
-        ('COMPANY', 'Company'),
-        ('STUDENT', 'Student'),
-        ('PROCTOR', 'Proctor'),
+        ('Company', 'Company'),
+        ('Student', 'Student'),
+        ('Proctor', 'Proctor'),
     )
     role = forms.ChoiceField(choices=ROLE_CHOICES)
 
@@ -24,7 +24,7 @@ class CustomUserCreationForm(UserCreationForm):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['text', 'question_type']
+        fields = ['text']
 
 class AnswerForm(forms.ModelForm):
     class Meta:

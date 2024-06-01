@@ -1,0 +1,42 @@
+body {
+    background-image: url("./light.webp");
+    background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat; 
+    height: 100vh; 
+    margin: 0; 
+    padding: 0; }
+
+
+
+h1,h2,h3{
+    color:black;
+    text-align: center;
+    font-family: 'Brush Script MT', cursive;
+    font-weight: bold;
+}
+
+.exam-title {
+    font-weight: bold;
+    display: inline-block; 
+    vertical-align: middle; 
+    margin-right: 100px;
+    color:black;
+    font-size: 30px;
+ }
+
+ .form {
+    display: inline-block; 
+     vertical-align: middle; 
+    }
+.error-message{
+    color:black;
+    font-size: 30px;
+    font-family: 'Brush Script MT', cursive;
+    font-weight: bold;
+        
+    }
+
+a{
+    font-size: 25px;
+}

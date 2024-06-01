@@ -1,6 +1,11 @@
 {% extends "home.html" %}
+
+{% load static %}
+
 {% block title %}Create Question{% endblock %}
 {% block header %}Create a Question{% endblock %}
+{% block css %}<link rel="stylesheet" href="{%static './question_create.css'%}" /> {% endblock %}
+
 {% block content %}
   <form method="post">
     {% csrf_token %}

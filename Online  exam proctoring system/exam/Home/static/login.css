@@ -1,15 +1,16 @@
 body {
-    background-image: url("./bg123.jpg");
+    background-image: url("./bg.webp");
     background-size: cover; 
     background-position: center; 
     background-repeat: no-repeat; 
     height: 100vh; 
     margin: 0; 
     padding: 0; }
-    
+
 h1{
-    font-family: Arial, sans-serif;
-    color: brown;
+    font-family: 'Brush Script MT', cursive;
+    font-weight: bold;
+    color: rgb(240, 197, 5);
     text-align: center;
     font-size: 34px;;
 }

@@ -1,5 +1,8 @@
 {% extends "home.html" %}
 {% load static %}
+
+
+{% load static %}
 {% block title %}Answers{% endblock %}
 {% block header %}View Answers{% endblock %}
 {% block css %}
@@ -11,11 +14,11 @@
     {% for answer in answers %}
       <li>
         <span class="answer-text">{{ answer.text }}</span>
-        <form class="form" method="post" action="{% url 'answer_delete' exam.id question.id answer.id %}">
+        <form class="form" method="post" action="{% url 'answer_delete' exam_id question.id answer.id %}">
           {% csrf_token %}
           <button type="submit">Delete</button>
         </form>
-        <a href="{% url 'answer_update' exam.id question.id answer.id %}">Update</a>
+        <a href="{% url 'answer_update' exam_id question.id answer.id %}">Update</a>
       </li>
     {% endfor %}
   </ul>

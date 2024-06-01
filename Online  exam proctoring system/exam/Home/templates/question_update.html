@@ -1,7 +1,11 @@
 {% extends "home.html" %}
+
+{% load static %}
 {% block title %}Update Question{% endblock %}
 {% block header %}Update Question{% endblock %}
 {% block content %}
+{% block css %}<link rel="stylesheet" href="{%static './question_update.css'%}" /> {% endblock %}
+
   <form method="post">
     {% csrf_token %}
     <label for="text">Question Text:</label><br>
