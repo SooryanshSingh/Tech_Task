@@ -10,11 +10,7 @@
     {% csrf_token %}
     <label for="text">Question Text:</label><br>
     <textarea id="text" name="text" rows="4" cols="50">{{ question.text }}</textarea><br>
-    <label for="question_type">Question Type:</label><br>
-    <select id="question_type" name="question_type">
-      <option value="Objective" {% if question.question_type == 'Objective' %}selected{% endif %}>Objective</option>
-      <option value="Subjective" {% if question.question_type == 'Subjective' %}selected{% endif %}>Subjective</option>
-    </select><br>
+    
     <input type="hidden" name="exam_id" value="{{ exam.id }}">
     <button type="submit">Save</button>
   </form>

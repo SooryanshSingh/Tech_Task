@@ -24,10 +24,19 @@ class Feedback(models.Model):
     rating = models.IntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
 
 
-
 class Response(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='responses')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='responses')
     text = models.TextField()
 
     def __str__(self):
         return f"Response for question: {self.question.text}"
+
+class Mark(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='marks')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='marks')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    marks = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Mark for {self.question} in {self.exam}"

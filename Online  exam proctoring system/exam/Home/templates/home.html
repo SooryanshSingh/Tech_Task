@@ -29,6 +29,13 @@
             <a href="{% url 'button2' %}">Logout</a>
         </div>
         {% endif %}
+        {% if is_company %}
+        <div>
+        
+          <a href="{% url 'exam_list' %}" class="btn btn-primary">Add Exam</a>
+        
+        </div>
+        {% endif %}
         <div>
             <a>Test</a>
         </div>
@@ -38,19 +45,29 @@
     </div>
     <div class="vre">
         <div class="card">
-            <p>We're here to ensure every student gets the best test experience possible.<br>
-            Unlock Your Potential, One Test at a Time!</p>
-            <img src="{% static '1st.jpg' %}" id="A" />
-        </div>
-        <div class="card">
-            <p>Our portal offers multiple advantages including:</p>
-            <ol>
-                <li>Personalised test creation</li>
-                <li>Test under fair supervision of proctors</li>
-                <li>Chat system between students and proctors </li>
-            </ol>
-            <img src="{% static 'online-exam.webp' %}" id="B" />
-        </div>
+            <div class="card-content">
+              <p class="card-title">Get the best Exam Experience
+              </p><p class="card-para">Let your talents shine! One test after another.</p>
+            </div>
+          </div>
+          
+          
+          <div class="card">
+            <div class="card-content">
+              <p class="card-title">Register now!
+              </p><p class="card-para">Students, Proctors and Test makers and invited to register to the website to enjoy our services!</p>
+
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-content">
+              <p class="card-title">Advantages of platform<p>
+              </p><p class="card-para">Safe and honest exam under supervision of proctor</p>
+              </p><p class="card-para">Personalised Test Creation</p>
+              </p><p class="card-para">Real Time Chat between Student and Proctor </p>
+
+            </div>
+          </div>  
     </div>
     {% endblock %}
 </body>

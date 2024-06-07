@@ -1,57 +1,64 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ exam.title }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'test.css' %}">
 </head>
 <body>
     <h1>{{ exam.title }}</h1>
     <p>{{ exam.description }}</p>
+    {% if error_message %}
+        <p class="error-message">{{ error_message }}</p>
+    {% endif %}
     <form id="exam-form" method="post" action="{% url 'test_with_chat' exam.id %}">
         {% csrf_token %}
-        <div style="display: flex;">
-            <div style="flex: 1; padding: 10px;">
+        <div class="container">
+            <div class="questions">
                 <h2>Questions:</h2>
                 <ul>
                     {% for question in questions %}
-                        <li>
+                        <li class="question-item">
                             <strong>{{ question.text }}</strong>
-                            {% if question.question_type == 'Objective' %}
-                                <ul>
-                                    {% for answer in question.answers.all %}
-                                        <li>
-                                            <label>
-                                                <input type="radio" name="answer_{{ question.id }}" value="{{ answer.id }}">
-                                                {{ answer.text }}
-                                            </label>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <textarea name="answer_{{ question.id }}" rows="4" cols="50"></textarea>
-                            {% endif %}
+                            <ul>
+                                {% for answer in question.answers.all %}
+                                    <li>
+                                        <label>
+                                            <input type="radio" name="answer_{{ question.id }}" value="{{ answer.id }}">
+                                            {{ answer.text }}
+                                        </label>
+                                    </li>
+                                {% endfor %}
+                            </ul>
                         </li>
                     {% endfor %}
                 </ul>
             </div>
-            <div style="flex: 1; padding: 10px; border-left: 1px solid #ccc;">
+            <div class="chat">
                 <h2>Chat with Proctor</h2>
-                <div id="chat-log" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px; margin-bottom: 10px;"></div>
-                <input id="chat-message-input" type="text" name="chat_message" size="100" placeholder="Type your message...">
-                <input id="chat-message-submit" type="submit" value="Send">
+                <div id="chat-log"></div>
+                <input id="chat-message-input" type="text" name="chat_message" placeholder="Type your message...">
+                <button id="chat-message-submit">Send</button>
             </div>
         </div>
-        <input type="submit" value="Submit Answers">
+        <input type="submit" value="Submit Answers" class="submit-button">
     </form>
     <script>
         const roomName = "{{ room_name }}";
         const chatSocket = new WebSocket(
-            'ws://' + window.location.hostname + ':8001/ws/chat/' + roomName + '/');
+            'ws://' + window.location.hostname + ':8000/ws/chat/' + roomName + '/'
+        );
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             const chatLog = document.querySelector('#chat-log');
-            chatLog.innerHTML += '<div>' + data.message + '</div>';
-            chatLog.scrollTop = chatLog.scrollHeight;
+            
+            if (!data.sender || data.sender !== roomName) {
+                if (!chatLog.innerHTML.includes(data.message)) {
+                    chatLog.innerHTML += '<div class="received-message">' + data.message + '</div>';
+                    chatLog.scrollTop = chatLog.scrollHeight;
+                }
+            }
         };
 
         chatSocket.onclose = function(e) {
@@ -69,10 +76,18 @@
             e.preventDefault();
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
-            if (message.trim()) { 
-                chatSocket.send(JSON.stringify({
-                    'message': message
-                }));
+            if (message.trim()) {
+                const chatLog = document.querySelector('#chat-log');
+                chatLog.innerHTML += '<div class="sent-message">' + message + '</div>';
+                chatLog.scrollTop = chatLog.scrollHeight;
+                if (chatSocket.readyState === WebSocket.OPEN) {
+                    chatSocket.send(JSON.stringify({
+                        'message': message,
+                        'sender': roomName
+                    }));
+                } else {
+                    console.error('WebSocket is not open. Message not sent.');
+                }
                 messageInputDom.value = '';
             }
         };

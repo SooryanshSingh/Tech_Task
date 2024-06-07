@@ -11,35 +11,48 @@ from django.urls import reverse
 from .forms import QuestionForm, AnswerForm, ExamForm
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
-    return render(request, 'home.html')
+    is_company = request.user.groups.filter(name='Company').exists()
+    print(is_company)
+    return render(request, 'home.html', {'is_company': is_company})
 
 def about(request):
     return render(request, 'about.html')
 
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def login_user(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('home'))                           
+        is_company = user.groups.filter(name='Company').exists()
+        return render(request, 'home.html', {'is_company': is_company})
+
     if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
+            is_company = user.groups.filter(name='Company').exists()
             return redirect('home')
         else:
             messages.error(request, "Invalid information. Please try again")
-    return render(request, 'login.html', {})
+
+    return render(request, 'login.html')
+
+
 
 def logout_user(request):
     logout(request)
     return redirect('home')
 
 
+    
+
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def signup(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse('home'))
+        is_company = user.groups.filter(name='Company').exists()
+        return render(request, 'home.html')
     
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -48,25 +61,27 @@ def signup(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             role = form.cleaned_data['role']  
-            user = authenticate(username=username, password=password)
+            if role == 'Company':
+                group = Group.objects.get(name='Company')
+                user.groups.add(group)
+            elif role == 'Student':
+                group = Group.objects.get(name='Student')
+                user.groups.add(group)
+            elif role == 'Proctor':
+                group = Group.objects.get(name='Proctor')
+                user.groups.add(group)
+            user = authenticate(username=username, password=password)  
             if user is not None:
-                if role == 'Company':
-                    group = Group.objects.get(name='Company')
-                    user.groups.add(group)
-                elif role == 'Student':
-                    group = Group.objects.get(name='Student')
-                    user.groups.add(group)
-                elif role == 'Proctor':
-                    group = Group.objects.get(name='Proctor')
-                    user.groups.add(group)
                 login(request, user)
-                return redirect('home')
+                is_company = user.groups.filter(name='Company').exists()
+                return render(request, 'home.html', {'is_company': is_company})
             else:
                 return redirect('signup')
     else:
         form = CustomUserCreationForm()
-    
+
     return render(request, 'signup.html', {'form': form})
+
 
 def exam_list(request):
     exams = Exam.objects.all()
@@ -121,9 +136,6 @@ def exam_delete(request, exam_id):
     return render(request, 'exam_list.html', {'exam': exam})
 
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib import messages
-from .models import Question, Exam
 
 def question_list(request, exam_id=None):
     if exam_id is not None:

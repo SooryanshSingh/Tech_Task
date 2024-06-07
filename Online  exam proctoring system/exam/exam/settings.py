@@ -37,12 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-     'daphne',
+    'channels',
+    'daphne',
     'django.contrib.staticfiles',
-
     'Home',
     'realtime',
 ]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -74,6 +75,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'exam.wsgi.application'
 ASGI_APPLICATION= 'exam.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

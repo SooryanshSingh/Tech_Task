@@ -11,7 +11,7 @@
     <h1>Register</h1>
     <p>Enter the following details in order to register to the website</p>
     <div class="container">
-        <div class="form">
+        <div class="formdiv">
             <form action="{% url 'signup' %}" method="POST">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
