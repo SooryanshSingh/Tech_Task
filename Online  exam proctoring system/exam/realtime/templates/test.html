@@ -45,6 +45,7 @@
     </form>
     <script>
         const roomName = "{{ room_name }}";
+        const username = "{{ user.username }}";
         const chatSocket = new WebSocket(
             'ws://' + window.location.hostname + ':8000/ws/chat/' + roomName + '/'
         );
@@ -52,12 +53,11 @@
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             const chatLog = document.querySelector('#chat-log');
-            
-            if (!data.sender || data.sender !== roomName) {
-                if (!chatLog.innerHTML.includes(data.message)) {
-                    chatLog.innerHTML += '<div class="received-message">' + data.message + '</div>';
-                    chatLog.scrollTop = chatLog.scrollHeight;
-                }
+            const sender = data.sender || 'Unknown';
+
+            if (sender !== username) {
+                chatLog.innerHTML += '<div class="received-message"><strong>(' + sender + '): </strong>' + data.message + '</div>';
+                chatLog.scrollTop = chatLog.scrollHeight;
             }
         };
 
@@ -78,12 +78,12 @@
             const message = messageInputDom.value;
             if (message.trim()) {
                 const chatLog = document.querySelector('#chat-log');
-                chatLog.innerHTML += '<div class="sent-message">' + message + '</div>';
+                chatLog.innerHTML += '<div class="sent-message"><strong>(' + username + '): </strong>' + message + '</div>';
                 chatLog.scrollTop = chatLog.scrollHeight;
                 if (chatSocket.readyState === WebSocket.OPEN) {
                     chatSocket.send(JSON.stringify({
                         'message': message,
-                        'sender': roomName
+                        'sender': username
                     }));
                 } else {
                     console.error('WebSocket is not open. Message not sent.');

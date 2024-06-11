@@ -8,13 +8,17 @@
     {% block css%}<link rel="stylesheet" href="{% static 'home.css' %}" />{% endblock %}
 </head>
 <body>
+  <div class="title">
     <h1>
         {% block header %}
+        <img id="v" src="{% static 'check.webp' %}" >
+
         Welcome to our test portal!
         {% endblock %}
     </h1>
     {% block content %}
     <h2>Serving every user needs</h2>
+  </div>
     <div class="container">
         {% if not user.is_authenticated %}
         <div>
@@ -32,16 +36,11 @@
         {% if is_company %}
         <div>
         
-          <a href="{% url 'exam_list' %}" class="btn btn-primary">Add Exam</a>
+          <a href="{% url 'exam_list' %}" class="btn btn-primary">View Exams</a>
         
         </div>
         {% endif %}
-        <div>
-            <a>Test</a>
-        </div>
-        <div>
-            <a href="{% url 'about' %}">About us</a>
-        </div>
+        
     </div>
     <div class="vre">
         <div class="card">

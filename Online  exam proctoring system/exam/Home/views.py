@@ -12,18 +12,18 @@ from .forms import QuestionForm, AnswerForm, ExamForm
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
     is_company = request.user.groups.filter(name='Company').exists()
-    print(is_company)
     return render(request, 'home.html', {'is_company': is_company})
 
 def about(request):
     return render(request, 'about.html')
 
-
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def login_user(request):
     if request.user.is_authenticated:
-        is_company = user.groups.filter(name='Company').exists()
-        return render(request, 'home.html', {'is_company': is_company})
+        if request.user.groups.filter(name='Student').exists():
+            return redirect('dashboard')
+        else:
+            return redirect('home')
 
     if request.method == "POST":
         username = request.POST.get('username')
@@ -31,28 +31,29 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            is_company = user.groups.filter(name='Company').exists()
-            return redirect('home')
+            if user.groups.filter(name='Student').exists():
+                return redirect('dashboard')
+            else:
+                return redirect('home')
         else:
             messages.error(request, "Invalid information. Please try again")
 
     return render(request, 'login.html')
 
-
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout_user(request):
     logout(request)
     return redirect('home')
 
 
-    
-
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def signup(request):
     if request.user.is_authenticated:
-        is_company = user.groups.filter(name='Company').exists()
-        return render(request, 'home.html')
+        if request.user.groups.filter(name='Student').exists():
+            return redirect('dashboard')
+        else:
+            return redirect('home')
     
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -73,8 +74,10 @@ def signup(request):
             user = authenticate(username=username, password=password)  
             if user is not None:
                 login(request, user)
-                is_company = user.groups.filter(name='Company').exists()
-                return render(request, 'home.html', {'is_company': is_company})
+                if user.groups.filter(name='Student').exists():
+                    return redirect('dashboard')
+                else:
+                    return redirect('home')
             else:
                 return redirect('signup')
     else:
@@ -83,8 +86,23 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
 
 
+def dashboard(request):
+    if request.user.is_authenticated and request.user.groups.filter(name='Student').exists():
+        assigned_exams = Exam.objects.filter(examinees=request.user)
+
+        context = {
+            'assigned_exams': assigned_exams
+        }
+
+        return render(request, 'dashboard.html', context)
+    else:
+        return redirect('home')
+
 def exam_list(request):
-    exams = Exam.objects.all()
+    if request.user.is_authenticated and request.user.groups.filter(name='Company').exists():
+        exams = Exam.objects.filter(company=request.user)
+    else:
+        exams = None
     return render(request, 'exam_list.html', {'exams': exams})
 
 
@@ -107,9 +125,7 @@ def exam_create(request):
 def exam_update(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id)
 
-    if exam.company != request.user:
-        messages.error(request, "You do not have permission to update this exam.")
-        return redirect('exam_list')  
+     
 
     if request.method == 'POST':
         form = ExamForm(request.POST, instance=exam)
@@ -126,9 +142,7 @@ def exam_update(request, exam_id):
 def exam_delete(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id)
     
-    if exam.company != request.user:
-        messages.error(request, "You do not have permission to delete this exam.")
-        return redirect('exam_list')  
+  
     if request.method == 'POST':
         exam.delete()
         return redirect('exam_list')

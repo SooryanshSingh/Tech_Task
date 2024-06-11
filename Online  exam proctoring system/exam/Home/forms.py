@@ -34,4 +34,4 @@ class AnswerForm(forms.ModelForm):
 class ExamForm(forms.ModelForm):
     class Meta:
         model = Exam
-        fields = ['title', 'description', 'duration']
+        fields = ['title', 'description']

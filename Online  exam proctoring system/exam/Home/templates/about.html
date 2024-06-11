@@ -1,49 +1,69 @@
-{%extends "home.html"%}
 {% load static %}
-{% block title  %}About{% endblock  %}
-
-{% block header  %}About me{% endblock  %}
-{% block css %}<link rel="stylesheet" href="{%static './About.css'%}" /> {% endblock %}
-
-{% block content  %}
-    <h2>Welcome</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}About Us{% endblock %} </title>
+    {% block css %}<link rel="stylesheet" href="{% static 'About.css' %}" />{% endblock %}
+</head>
+<body>
+    <h1>
+        {% block header %}
+        About Us
+        {% endblock %}
+    </h1>
+    {% block content %}
+    <h2>Learn more about our platform</h2>
     <div class="container">
-        <div>
-            <a href="{% url 'home' %}">Home</a>
-
-        </div>
-        {%if not user.is_authenticated %}
+        {% if not user.is_authenticated %}
         <div>
             <a href="{% url 'button1' %}">Login</a>
-          
         </div>
         <div>
             <a href="{% url 'signup' %}">Register</a>
-
         </div>
-        {% endif %} 
-        {%if user.is_authenticated %}
+        {% endif %}
+        {% if user.is_authenticated %}
         <div>
             <a href="{% url 'button2' %}">Logout</a>
-    
+        </div>
+        {% endif %}
+        {% if is_company %}
+        <div>
+        
+          <a href="{% url 'exam_list' %}" class="btn btn-primary">Add Exam</a>
+        
         </div>
         {% endif %}
         <div>
-
-            <a>Test</a>          
+            <a>Test</a>
         </div>
-      
         <div>
             <a href="{% url 'about' %}">About us</a>
-
         </div>
     </div>
-<div class="abc">   
-    <div class="card">
-        <p>I am Sooryansh Singh</p>
-        <p>NIT Durgapur Computer Science and Engineering</p>
-        <p>I live in Varanasi Uttar Pradesh</p>
-        <img src="{% static 'logo.jpg'%}" id="A" />
+    
+    <div class="vre">
+        <div class="card">
+            <div class="card-content">
+              <p class="card-title">Our Mission</p>
+              <p class="card-para">We strive to provide the best exam experience.</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-content">
+              <p class="card-title">Our Vision</p>
+              <p class="card-para">Empowering students and educators worldwide.</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-content">
+              <p class="card-title">Our Values</p>
+              <p class="card-para">Integrity, Innovation, and Excellence.</p>
+            </div>
+        </div>
     </div>
-</div>
-{% endblock  %}   
+    {% endblock %}
+</body>
+</html>
