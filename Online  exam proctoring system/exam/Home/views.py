@@ -68,9 +68,7 @@ def signup(request):
             elif role == 'Student':
                 group = Group.objects.get(name='Student')
                 user.groups.add(group)
-            elif role == 'Proctor':
-                group = Group.objects.get(name='Proctor')
-                user.groups.add(group)
+          
             user = authenticate(username=username, password=password)  
             if user is not None:
                 login(request, user)
@@ -85,6 +83,7 @@ def signup(request):
 
     return render(request, 'signup.html', {'form': form})
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 
 def dashboard(request):
     if request.user.is_authenticated and request.user.groups.filter(name='Student').exists():
@@ -97,6 +96,16 @@ def dashboard(request):
         return render(request, 'dashboard.html', context)
     else:
         return redirect('home')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+    
+def marks_view(request):
+    if request.user.groups.filter(name='Company').exists():
+        exams = Exam.objects.filter(company=request.user)
+        context = {'exams': exams}
+        return render(request, 'marks.html', context)
+    else:
+        return redirect('home')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 
 def exam_list(request):
     if request.user.is_authenticated and request.user.groups.filter(name='Company').exists():

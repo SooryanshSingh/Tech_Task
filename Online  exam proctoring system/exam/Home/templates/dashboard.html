@@ -1,15 +1,16 @@
-{%extends "home.html"%}
+{% extends "home.html" %}
 {% load static %}
-{% block title  %} Student Dashboard {% endblock %}
-{% block header %}Welcmoe to your Dashboard{% endblock %}
+{% block title %} Student Dashboard {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static './dashboard.css' %}" />
+<link rel="stylesheet" href="{% static 'dashboard.css' %}" />
 {% endblock %}
-{% block  content %}
-    
+{% block content %}
+
+<div class="container">
+    <h1>Welcome to your Dashboard, {{ user.username }}</h1>
     <h2>These are the exams assigned to you</h2>
- 
+
     <ul>
         {% for exam in assigned_exams %}
             <li>
@@ -20,5 +21,6 @@
             <li>No exams assigned yet.</li>
         {% endfor %}
     </ul>
+</div>
 
-{% endblock%}
+{% endblock %}

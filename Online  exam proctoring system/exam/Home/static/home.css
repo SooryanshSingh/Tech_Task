@@ -1,48 +1,15 @@
-body {
-  background-image: url("./bg.webp");
-  background-size: cover; 
-  background-position: center; 
-  background-repeat: no-repeat; 
-  height: 100vh; 
-  margin: 0; 
-  padding: 0; 
-}
-.title {
-  background-color: rgba(255, 255, 255, 0.8); 
-  padding: 20px 40px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  margin: 20px auto;
-  max-width: 80%;
-}
-#v{
+#v {
   width: 50px;
-}
-.title h1 {
-  font-size: 3em;
-  color: #333;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 0;
-  font-family: 'Brush Script MT', cursive;
-}
-
-.title h2 {
-  font-size: 1.5em;
-  color: #555;
-  margin-top: 10px;
-  font-family: 'Arial', sans-serif;
 }
 
 h1, h2 {
-  color: yellow;
-  text-align: center;
+  color: red;
   font-family: 'Brush Script MT', cursive;
   font-weight: bold;
 }
 
 .container {
-  background-color: rgba(255, 255, 255, 0.8); 
+  background-color: skyblue; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -70,8 +37,6 @@ h1, h2 {
   font-size: 18px;
   font-weight: bold;
   transition: color 0.3s;
-  
-
 }
 
 .container > div:hover {
@@ -85,7 +50,7 @@ h1, h2 {
 .vre {
   padding: 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: flex-start;
   flex-wrap: wrap;
   margin-bottom: 30px;
@@ -95,7 +60,7 @@ h1, h2 {
   width: 500px;
   height: 500px;
   background-color: #4158D0;
-  background-image: linear-gradient(43deg, #00ccff 0%, #FF8C00 100%);   
+  background-image: linear-gradient(43deg, #6bebda 0%, #f3f5e8 50%);
   border-radius: 8px;
   border: 5px solid green;
   color: white;
@@ -103,8 +68,15 @@ h1, h2 {
   position: relative;
   transform-style: preserve-3d;
   perspective: 1000px;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   cursor: pointer;
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  justify-content: center; 
+  margin-bottom: 20px;
+  margin-left: 180px;
+
 }
 
 .card-content {
@@ -114,7 +86,7 @@ h1, h2 {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  color: white;
+  color: black;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -147,7 +119,7 @@ h1, h2 {
   width: 100%;
   height: 100%;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.1));
-  transition: transform 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   z-index: 1;
 }
 
@@ -163,7 +135,7 @@ h1, h2 {
   width: 100%;
   height: 100%;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.1));
-  transition: transform 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   z-index: 1;
 }
 
@@ -198,3 +170,121 @@ ul {
   font-weight: bold;
   color: white;
 }
+
+.advantages {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 2px solid #4158D0;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.advantages:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.advantages h3 {
+  color: #4158D0;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.advantages ul {
+  list-style: none;
+  padding: 0;
+}
+
+.advantages li {
+  background-color: #6beb75;
+  color: #000;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 10px 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.advantages li:hover {
+  background-color: #52a354;
+  transform: translateX(10px);
+}
+
+
+.bard {
+  position: relative;
+  width: 190px;
+  height: 254px;
+  background-color: rgb(0, 0, 0);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 12px;
+  gap: 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  color: #000000;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+  margin-left: 50px;
+}
+
+.bard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: -5px;
+  margin: auto;
+  width: 200px;
+  height: 264px;
+  border-radius: 15px;
+  background: linear-gradient(-45deg, #1cc2ff 0%, #ff261b 100%);
+  z-index: -10;
+  pointer-events: none;
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bard::after {
+  content: "";
+  z-index: -1;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(-45deg, #1cffa4 0%, #ff01aee6 100%);
+  transform: translate3d(0, 0, 0) scale(0.95);
+  filter: blur(40px);
+  transition: filter 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Added transition for smooth blur effect */
+}
+
+.heading {
+  font-size: 20px;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.bard p:not(.heading) {
+  font-size: 20px;
+  color: #000000;
+}
+
+.bard p:last-child {
+  color: #ffffff;
+}
+
+.bard:hover::after {
+  filter: blur(50px);
+}
+
+.bard:hover::before {
+  transform: rotate(-90deg) scaleX(1.34) scaleY(0.77);
+}
+
+.bard:hover {
+  transform: scale(1.05); /* Added slight scale effect on hover */
+}
+

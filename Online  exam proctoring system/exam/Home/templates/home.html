@@ -4,22 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Home Page {% endblock %} </title>
+    <title>{% block title %}Home Page{% endblock %}</title>
     {% block css%}<link rel="stylesheet" href="{% static 'home.css' %}" />{% endblock %}
 </head>
 <body>
-  <div class="title">
-    <h1>
-        {% block header %}
-        <img id="v" src="{% static 'check.webp' %}" >
 
-        Welcome to our test portal!
-        {% endblock %}
-    </h1>
+    {% block header %}
+    {% endblock %}
+ 
     {% block content %}
-    <h2>Serving every user needs</h2>
-  </div>
     <div class="container">
+      <img id="v" src="{% static 'check.webp' %}" alt="Check Image">
+
+      <h1>Welcome to our test portal-</h1>
+      <br/>
+      <h2>Serving every user needs</h2>
         {% if not user.is_authenticated %}
         <div>
             <a href="{% url 'button1' %}">Login</a>
@@ -35,39 +34,56 @@
         {% endif %}
         {% if is_company %}
         <div>
-        
           <a href="{% url 'exam_list' %}" class="btn btn-primary">View Exams</a>
-        
         </div>
         {% endif %}
-        
     </div>
+
     <div class="vre">
         <div class="card">
             <div class="card-content">
-              <p class="card-title">Get the best Exam Experience
-              </p><p class="card-para">Let your talents shine! One test after another.</p>
+              <p class="card-title">Get the best Exam Experience</p>
+              <p class="card-para">Let your talents shine! One test after another.</p>
             </div>
           </div>
           
-          
-          <div class="card">
+        <div class="card">
             <div class="card-content">
-              <p class="card-title">Register now!
-              </p><p class="card-para">Students, Proctors and Test makers and invited to register to the website to enjoy our services!</p>
-
+              <p class="card-title">Register now!</p>
+              <p class="card-para">Students, Proctors, and Test makers are invited to register to enjoy our services!</p>
             </div>
-          </div>
-          <div class="card">
-            <div class="card-content">
-              <p class="card-title">Advantages of platform<p>
-              </p><p class="card-para">Safe and honest exam under supervision of proctor</p>
-              </p><p class="card-para">Personalised Test Creation</p>
-              </p><p class="card-para">Real Time Chat between Student and Proctor </p>
-
-            </div>
-          </div>  
+        </div>
     </div>
+
+    <div class="advantages">
+        <h3>Advantages of our platform:</h3>
+        <ul>
+            <li>Safe and honest exams under the supervision of a proctor</li>
+            <li>Personalized Test Creation</li>
+            <li>Give timed test with fixed deadlines</li>
+        </ul>
+    </div>
+    <div class="advantages">
+      <h3>Features of our portal:</h3>
+      <ul>
+          <li>Live video conference between proctor and student</li>
+          <li>Real-Time Chat between Student and Proctor</li>
+      </ul>
+  </div>
+<div class="vre">
+  <div class="bard">
+    <p class="heading">Signup Now!</p>
+    <p>Give tests with in an accurate and safe envirnoment</p>
+    <p>Students</p>
+    </div>
+    <div class="bard">
+      <p class="heading">Signup Now!</p>
+      <p>Regsiter to add. delete or update personalised exams</p>
+      <p>Test Makers</p>
+    </div>
+    
+  </div>
+
     {% endblock %}
 </body>
 </html>

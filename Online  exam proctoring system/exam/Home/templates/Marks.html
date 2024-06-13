@@ -1,0 +1,32 @@
+{% extends "home.html" %}
+{% load static %}
+
+{% block title %} Marks {% endblock %}
+{% block css %}<link rel="stylesheet" href="{% static 'marks.css' %}" />{% endblock %}
+{% block header %}Marks for Exams Created by {{ user.get_full_name }}{% endblock %}
+
+{% block content %}
+<h2>Exam Marks</h2>
+{% for exam in exams %}
+    <div class="exam-block">
+        <h3>{{ exam.title }}</h3>
+        <h4>Assigned Students</h4>
+        <ul>
+            {% for student in exam.examinees.all %}
+                <li>
+                    <strong>{{ student.get_full_name }} ({{ student.username }})</strong>
+                    {% with student_marks=exam.marks.filter(user=student).first %}
+                        {% if student_marks %}
+                            - Marks: {{ student_marks.marks }}
+                        {% else %}
+                            - Not Attempted
+                        {% endif %}
+                    {% endwith %}
+                </li>
+            {% empty %}
+                <li>No students assigned.</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endfor %}
+{% endblock %}

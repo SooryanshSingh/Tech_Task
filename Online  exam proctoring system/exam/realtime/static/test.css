@@ -95,3 +95,98 @@ p {
     background-color: #0056b3;
 }
 
+chat-container {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 30%;
+    height: 100%;
+    background-color: white;
+    border-left: 1px solid #ccc;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+    z-index: 1000; /* Make sure it appears above other content */
+}
+
+.chat-container.active {
+    display: block;
+}
+
+.chat-toggle-button, .chat-close-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    z-index: 1001; /* Make sure it appears above other content */
+}
+
+.chat-close-button {
+    right: 20px; /* Adjust position */
+    background-color: #dc3545;
+}
+
+.container {
+    display: flex;
+}
+
+.questions, .chat, .question-nav {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.question-nav {
+    width: 200px;
+    max-height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    padding-top: 50px;
+}
+
+.questions {
+    width: calc(100% - 200px); /* Space for the nav panel */
+    margin-left: 200px; /* Space for the nav panel */
+}
+
+.submit-button {
+    width: auto;
+    padding: 10px 20px;
+}
+
+.question-item {
+    display: none;
+}
+
+.question-item.active {
+    display: block;
+}
+
+h1, h2 {
+    margin-left: 220px; /* Adjust position to not be hidden by the nav */
+}
+.submit-button {
+width: auto;
+padding: 10px 20px;
+transition: opacity 0.3s ease; /* Smooth transition for opacity */
+}
+
+.submit-button:disabled {
+opacity: 0.6; /* Dim when disabled */
+cursor: not-allowed;
+}
+
+.submit-button:enabled {
+opacity: 1; /* Fully visible when enabled */
+background-color: #007bff; /* Blue background */
+color: white; /* White text */
+}
