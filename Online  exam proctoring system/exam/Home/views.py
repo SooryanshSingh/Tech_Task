@@ -9,6 +9,9 @@ from .forms import CustomUserCreationForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .forms import QuestionForm, AnswerForm, ExamForm
+from .forms import ExamForm, QuestionFormSet, AnswerFormSet
+from .forms import ProctorEmailForm 
+from .models import ProctorEmail
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
     is_company = request.user.groups.filter(name='Company').exists()
@@ -16,12 +19,20 @@ def home(request):
 
 def about(request):
     return render(request, 'about.html')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def logout_user(request):
+    logout(request)
+    return redirect('home')
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def login_user(request):
     if request.user.is_authenticated:
         if request.user.groups.filter(name='Student').exists():
             return redirect('dashboard')
+        elif request.user.groups.filter(name='Company').exists() and not request.user.groups.filter(name='Proctor').exists():
+            return redirect('company_dashboard')
+        elif request.user.groups.filter(name='Proctor').exists():
+            return redirect('proctor_dashboard')
         else:
             return redirect('home')
 
@@ -33,6 +44,10 @@ def login_user(request):
             login(request, user)
             if user.groups.filter(name='Student').exists():
                 return redirect('dashboard')
+            elif user.groups.filter(name='Company').exists() and not user.groups.filter(name='Proctor').exists():
+                return redirect('company_dashboard')
+            elif user.groups.filter(name='Proctor').exists():
+                return redirect('proctor_dashboard')
             else:
                 return redirect('home')
         else:
@@ -40,40 +55,46 @@ def login_user(request):
 
     return render(request, 'login.html')
 
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def logout_user(request):
-    logout(request)
-    return redirect('home')
-
-
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def signup(request):
     if request.user.is_authenticated:
         if request.user.groups.filter(name='Student').exists():
             return redirect('dashboard')
+        elif request.user.groups.filter(name='Company').exists() and not request.user.groups.filter(name='Proctor').exists():
+            return redirect('company_dashboard')
+        elif request.user.groups.filter(name='Proctor').exists():
+            return redirect('proctor_dashboard')
         else:
             return redirect('home')
-    
+
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
-            role = form.cleaned_data['role']  
+            role = form.cleaned_data['role']
             if role == 'Company':
                 group = Group.objects.get(name='Company')
                 user.groups.add(group)
             elif role == 'Student':
                 group = Group.objects.get(name='Student')
                 user.groups.add(group)
-          
-            user = authenticate(username=username, password=password)  
+
+            if ProctorEmail.objects.filter(email=user.email).exists():
+                group = Group.objects.get(name='Proctor')
+                user.groups.add(group)
+
+            user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
                 if user.groups.filter(name='Student').exists():
                     return redirect('dashboard')
+                elif user.groups.filter(name='Company').exists() and not user.groups.filter(name='Proctor').exists():
+                    return redirect('company_dashboard')
+                elif user.groups.filter(name='Proctor').exists():
+                    return redirect('proctor_dashboard')
                 else:
                     return redirect('home')
             else:
@@ -83,7 +104,7 @@ def signup(request):
 
     return render(request, 'signup.html', {'form': form})
 
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+
 
 def dashboard(request):
     if request.user.is_authenticated and request.user.groups.filter(name='Student').exists():
@@ -97,7 +118,40 @@ def dashboard(request):
     else:
         return redirect('home')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-    
+
+def company_dashboard(request):
+    if request.method == 'POST':
+        form = ProctorEmailForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            ProctorEmail.objects.create(email=email, submitted_by=request.user)
+            form = ProctorEmailForm()  # Clear the form after submission
+            return render(request, 'company_dashboard.html', {
+                'form': form, 
+                'success': True,
+                'total_exams': Exam.objects.filter(company=request.user).count(),
+                'total_proctors': ProctorEmail.objects.filter(submitted_by=request.user).count()
+            })
+    else:
+        form = ProctorEmailForm()
+
+    return render(request, 'company_dashboard.html', {
+        'form': form,
+        'total_exams': Exam.objects.filter(company=request.user).count(),
+        'total_proctors': ProctorEmail.objects.filter(submitted_by=request.user).count()
+    })
+  
+def proctor_dashboard(request):
+    if request.user.groups.filter(name='Proctor').exists():
+        company = ProctorEmail.objects.get(email=request.user.email).submitted_by
+        exams = Exam.objects.filter(company=company)
+        context = {
+            'exams': exams,
+            'company': company,
+        }
+        return render(request, 'proctor_dashboard.html', context)
+    else:
+        return redirect('home')
 def marks_view(request):
     if request.user.groups.filter(name='Company').exists():
         exams = Exam.objects.filter(company=request.user)
@@ -119,43 +173,48 @@ def exam_detail(request, exam_id):
     exam = Exam.objects.get(pk=exam_id)
     return render(request, 'exam_list.html', {'exam': exam})
 
+
 def exam_create(request):
     if request.method == 'POST':
         form = ExamForm(request.POST)
-        if form.is_valid():
+        question_formset = QuestionFormSet(request.POST, instance=form.instance)
+        if form.is_valid() and question_formset.is_valid():
             exam = form.save(commit=False)
             exam.company = request.user
             exam.save()
+            question_formset.instance = exam
+            question_formset.save()
             return redirect('exam_list')
     else:
         form = ExamForm()
-    return render(request, 'exam_create.html', {'form': form})
+        question_formset = QuestionFormSet(instance=form.instance)
+    return render(request, 'exam_create.html', {
+        'form': form,
+        'question_formset': question_formset,
+    })
 
 def exam_update(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id)
-
-     
-
     if request.method == 'POST':
         form = ExamForm(request.POST, instance=exam)
-        if form.is_valid():
-            exam = form.save(commit=False)
-            exam.company = request.user
-            exam.save()
+        question_formset = QuestionFormSet(request.POST, instance=exam)
+        if form.is_valid() and question_formset.is_valid():
+            form.save()
+            question_formset.save()
             return redirect('exam_list')
     else:
         form = ExamForm(instance=exam)
-    
-    return render(request, 'exam_update.html', {'form': form, 'exam': exam})
+        question_formset = QuestionFormSet(instance=exam)
+    return render(request, 'exam_update.html', {
+        'form': form,
+        'question_formset': question_formset,
+    })
 
 def exam_delete(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id)
-    
-  
     if request.method == 'POST':
         exam.delete()
         return redirect('exam_list')
-
     return render(request, 'exam_list.html', {'exam': exam})
 
 

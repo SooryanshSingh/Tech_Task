@@ -1,14 +1,46 @@
 {% extends "home.html" %}
 {% load static %}
-{% block title  %}Update exams{% endblock  %}
-
-{% block header  %}Update an exam{% endblock  %}
-{% block css %}<link rel="stylesheet" href="{%static './exam_update.css'%}" /> {% endblock %}
-
+{% block title %}Update Exam{% endblock %}
+{% block header %}Update Exam{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'exam_update.css' %}">
+{% endblock %}
 {% block content %}
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Save</button>
+    <h3>Questions</h3>
+    {{ question_formset.management_form }}
+    {% for form in question_formset %}
+      <div class="question-form">
+        {{ form.id }}
+        <div>
+          {{ form.text.label }} {{ form.text }}
+        </div>
+        <h4>Answers</h4>
+        {{ form.answer_set.management_form }}
+        {% for answer_form in form.answer_set %}
+          <div>
+            {{ answer_form.id }}
+            <div>
+              {{ answer_form.text.label }} {{ answer_form.text }}
+            </div>
+            <div>
+              {{ answer_form.is_correct.label }} {{ answer_form.is_correct }}
+            </div>
+          </div>
+        {% endfor %}
+        <div>
+          <button type="button" onclick="addAnswer(this)">Add Answer</button>
+        </div>
+        <div>
+          <button type="button" onclick="removeQuestion(this)">Remove Question</button>
+        </div>
+      </div>
+    {% endfor %}
+    <div>
+      <button type="button" onclick="addQuestion()">Add Question</button>
+    </div>
+    <button type="submit">Save Changes</button>
   </form>
 {% endblock %}

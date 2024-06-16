@@ -95,7 +95,7 @@ p {
     background-color: #0056b3;
 }
 
-chat-container {
+.chat-container {
     display: none;
     position: fixed;
     right: 0;

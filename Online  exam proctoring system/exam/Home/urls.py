@@ -24,4 +24,7 @@ urlpatterns = [
     path('exams/questions/<int:exam_id>/<int:question_id>/answers/create', views.answer_create, name='answer_create'),
     path('exams/questions/<int:exam_id>/<int:question_id>/answers/<int:answer_id>/update/', views.answer_update, name='answer_update'),
     path('exams/questions/<int:exam_id>/<int:question_id>/answers/<int:answer_id>/delete/', views.answer_delete, name='answer_delete'),
+    path('company_dashboard/', views.company_dashboard, name='company_dashboard'),
+    path('proctor_dashboard/', views.proctor_dashboard, name='proctor_dashboard'),
+
 ]

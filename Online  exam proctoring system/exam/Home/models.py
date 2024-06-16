@@ -16,7 +16,6 @@ class Exam(models.Model):
         return self.title
 
 
-
 class Question(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
@@ -45,4 +44,9 @@ class Mark(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     marks = models.IntegerField(default=0)
 
-   
+class ProctorEmail(models.Model):
+    email = models.EmailField(unique=True)
+    submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='proctor_emails')
+
+    def __str__(self):
+        return self.email
