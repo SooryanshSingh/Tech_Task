@@ -1,0 +1,48 @@
+{% extends "home.html" %}
+{% load static %}
+
+{% block content %}
+  <form id="examForm" method="post">
+    {% csrf_token %}
+    <label for="title">Title:</label><br>
+    <input type="text" id="title" name="title" value="{{ exam.title|default_if_none:'' }}"><br><br>
+
+    <label for="description">Description:</label><br>
+    <textarea id="description" name="description">{{ exam.description|default_if_none:'' }}</textarea><br><br>
+
+    <label for="start_time">Start Time:</label><br>
+    <input type="datetime-local" id="start_time" name="start_time" value="{{ exam.start_time|default_if_none:'' }}"><br><br>
+
+    <label for="end_time">End Time:</label><br>
+    <input type="datetime-local" id="end_time" name="end_time" value="{{ exam.end_time|default_if_none:'' }}"><br><br>
+
+    <div id="questions">
+      {% for question in questions %}
+      <fieldset class="question-fieldset" data-question-id="{{ question.id }}">
+        <legend>Question {{ forloop.counter }}</legend>
+        <label for="question_{{ question.id }}">Question Text:</label><br>
+        <textarea id="question_{{ question.id }}" name="question_{{ question.id }}">{{ question.text }}</textarea><br><br>
+
+        <div class="answers">
+          {% for answer in question.answers.all %}
+          <div class="answer" data-answer-id="{{ answer.id }}">
+            <label for="answer_{{ answer.id }}">Answer Text:</label><br>
+            <textarea id="answer_{{ answer.id }}" name="answer_{{ answer.id }}">{{ answer.text }}</textarea><br>
+            <input type="checkbox" id="correct_{{ answer.id }}" name="correct_{{ answer.id }}" {% if answer.is_correct %}checked{% endif %}>
+            <label for="correct_{{ answer.id }}">Correct Answer</label><br><br>
+          </div>
+          {% endfor %}
+        </div>
+
+        <button type="button" class="add-answer" data-question-id="{{ question.id }}">Add Answer</button><br><br>
+      </fieldset>
+      {% endfor %}
+    </div>
+
+    <button type="button" id="addQuestion">Add Question</button><br><br>
+
+    <button type="submit">{% if exam %}Update Exam{% else %}Create Exam{% endif %}</button>
+  </form>
+
+  <script src="{% static 'exam_manage.js' %}"></script>
+{% endblock %}

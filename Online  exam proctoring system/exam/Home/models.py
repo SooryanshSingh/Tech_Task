@@ -1,8 +1,8 @@
 
+
+
 from django.db import models
 from django.contrib.auth.models import User
-
-
 
 class Exam(models.Model):
     title = models.CharField(max_length=255)
@@ -11,19 +11,18 @@ class Exam(models.Model):
     examinees = models.ManyToManyField(User, related_name='assigned_exams', blank=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    duration = models.PositiveIntegerField(help_text="Duration in minutes")
 
     def __str__(self):
         return self.title
-
 
 class Question(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
 
-
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
-    text = models.TextField()
+    text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 class Feedback(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='feedbacks')

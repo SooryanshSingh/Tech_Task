@@ -9,7 +9,7 @@ from .forms import CustomUserCreationForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .forms import QuestionForm, AnswerForm, ExamForm
-from .forms import ExamForm, QuestionFormSet, AnswerFormSet
+from .forms import ExamForm, QuestionForm, AnswerForm
 from .forms import ProctorEmailForm 
 from .models import ProctorEmail
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -321,4 +321,56 @@ def answer_delete(request, exam_id, question_id, answer_id):
         return redirect('answer_list', exam_id=exam_id, question_id=question_id)
     return render(request, 'answer_list.html', {'answer': answer, 'question': question, 'exam_id': exam_id})
 
+# views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Exam, Question, Answer
+from .forms import ExamForm, QuestionForm, AnswerForm
 
+def exam_manage(request, exam_id=None):
+    if exam_id:
+        exam = get_object_or_404(Exam, pk=exam_id)
+        existing_questions = exam.questions.all()  # Fetch existing questions for the exam
+    else:
+        exam = None
+        existing_questions = []
+
+    if request.method == 'POST':
+        exam_form = ExamForm(request.POST, instance=exam)
+        if exam_form.is_valid():
+            exam = exam_form.save(commit=False)
+            exam.company = request.user
+            exam.save()
+
+            # Process questions and answers
+            for question_data in request.POST.getlist('question'):
+                question_text = question_data.get('question_text')
+                if question_text:
+                    question = Question.objects.create(exam=exam, question_text=question_text)
+                    
+                    # Process answers for this question
+                    for answer_data in question_data.getlist('answers'):
+                        answer_text = answer_data.get('test')  # Adjust to match your Answer model field
+                        is_correct = answer_data.get('is_correct')
+                        if answer_text:
+                            Answer.objects.create(question=question, test=answer_text, is_correct=is_correct == 'on')
+
+            return redirect('exam-list')  # Replace with your success URL
+        else:
+            # Handle form errors
+            pass
+    else:
+        initial_exam_data = exam.serialize() if exam else None
+        exam_form = ExamForm(instance=exam, initial=initial_exam_data)
+    
+    initial_question_data = []
+    for question in existing_questions:
+        answers_data = [{'test': answer.exam, 'is_correct': answer.is_correct} for answer in question.answers.all()]
+        initial_question_data.append({'question_text': question.question_text, 'answers': answers_data})
+    
+    context = {
+        'exam': exam,
+        'exam_form': exam_form,
+        'existing_questions': existing_questions,
+        'initial_question_data': initial_question_data,
+    }
+    return render(request, 'exam_manage.html', context)

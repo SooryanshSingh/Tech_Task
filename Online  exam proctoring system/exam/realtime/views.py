@@ -52,3 +52,7 @@ def test_with_chat(request, exam_id):
         'answers': {},
         'is_proctor': is_proctor,
     })
+
+
+def test_end(request):
+    return render(request, 'test-end.html')

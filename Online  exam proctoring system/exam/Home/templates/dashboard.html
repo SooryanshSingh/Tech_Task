@@ -4,23 +4,41 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
+<style>
+    .disabled-link {
+        pointer-events: none;
+        color: #999; 
+    }
+</style>
 {% endblock %}
-{% block content %}
 
+{% block content %}
 <div class="container">
     <h1>Welcome to your Dashboard, {{ user.username }}</h1>
     <h2>These are the exams assigned to you</h2>
 
     <ul>
         {% for exam in assigned_exams %}
-            <li>
-                <h3><a href="{% url 'test_with_chat' exam_id=exam.id %}">{{ exam.title }}</a></h3>
-                <p>{{ exam.description }}</p>
-            </li>
+            {% comment %}
+            Determine if the current time is within the exam's start and end time
+            %}
+            {% with current_time=now %}
+                {% if current_time >= exam.start_time and current_time <= exam.end_time %}
+                    <li>
+                        <h3><a href="{% url 'test_with_chat' exam_id=exam.id %}">{{ exam.title }}</a></h3>
+                        <p>{{ exam.description }}</p>
+                    </li>
+                {% else %}
+                    <li>
+                        <h3>{{ exam.title }}</h3>
+                        <p>{{ exam.description }}</p>
+                        <p>Exam not yet started or has ended.</p>
+                    </li>
+                {% endif %}
+            {% endwith %}
         {% empty %}
             <li>No exams assigned yet.</li>
         {% endfor %}
     </ul>
 </div>
-
 {% endblock %}

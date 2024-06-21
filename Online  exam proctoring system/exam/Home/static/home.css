@@ -285,6 +285,38 @@ ul {
 }
 
 .bard:hover {
-  transform: scale(1.05); /* Added slight scale effect on hover */
+  transform: scale(1.05); 
 }
 
+
+nav ul {
+  list-style-type: none;
+  background-color: hsl(0,0%,25%);
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  text-align: center; 
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 15px 20px; 
+  display: inline-block;}
+
+nav a:hover {
+  background-color: hsl(0,0%,10%);
+}
+
+nav li {
+  display: inline-block; 
+  margin-right: 10px; 
+}
+
+nav li:last-child {
+  margin-right: 0;
+}
+
+nav li.welcome {
+  color: white; 
+}

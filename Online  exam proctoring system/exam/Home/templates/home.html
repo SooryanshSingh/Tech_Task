@@ -19,26 +19,24 @@
       <h1>Welcome to our test portal-</h1>
       <br/>
       <h2>Serving every user needs</h2>
-        {% if not user.is_authenticated %}
-        <div>
-            <a href="{% url 'button1' %}">Login</a>
-        </div>
-        <div>
-            <a href="{% url 'signup' %}">Register</a>
-        </div>
-        {% endif %}
-        {% if user.is_authenticated %}
-        <div>
-            <a href="{% url 'button2' %}">Logout</a>
-        </div>
-        {% endif %}
-        {% if is_company %}
-        <div>
-          <a href="{% url 'exam_list' %}" class="btn btn-primary">View Exams</a>
-        </div>
-        {% endif %}
+      </div>
     </div>
-
+    <nav>
+      <ul>
+          {% if not user.is_authenticated %}
+              <li><a href="{% url 'button1' %}">Login</a></li>
+              <li><a href="{% url 'signup' %}">Register</a></li>
+          {% endif %}
+          {% if user.is_authenticated %}
+              <li><a href="{% url 'button2' %}">Logout</a></li>
+              <li class="welcome">Welcome: {{ user.username }}</li> <!-- Assuming 'username' is the correct attribute -->
+          {% endif %}
+          {% if is_company %}
+              <li><a href="{% url 'exam_list' %}" class="btn btn-primary">View Exams</a></li>
+          {% endif %}
+      </ul>
+  </nav>
+    
     <div class="vre">
         <div class="card">
             <div class="card-content">

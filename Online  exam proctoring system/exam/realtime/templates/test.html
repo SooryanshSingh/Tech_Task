@@ -5,12 +5,19 @@
     <title>{{ exam.title }}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'test.css' %}">
     <style>
-      
+        /* Add any additional CSS styles here */
     </style>
 </head>
 <body>
     <h1>{{ exam.title }}</h1>
     <p>{{ exam.description }}</p>
+
+    <!-- Timer Container -->
+    <div class="timer-container">
+        <strong>Time Remaining:</strong>
+        <span id="timer"></span>
+    </div>
+
     <form id="exam-form" method="post" action="{% url 'test_with_chat' exam.id %}">
         {% csrf_token %}
         <div class="container">
@@ -56,6 +63,7 @@
             </div>
         </div>
     </form>
+
     <script>
         const roomName = "{{ room_name }}";
         const username = "{{ user.username }}";
@@ -204,46 +212,59 @@
 
         checkAllAnswered();
         updateNavigationButtons();
+
         const isProctor = {{ is_proctor|yesno:"true,false" }};
 
-if (!isProctor) {
-    // Tab/Window change detection for students only
-    let blurTimeout;
+        if (!isProctor) {
+            // Tab/Window change detection for students only
+            let blurTimeout;
 
-    window.addEventListener('blur', function() {
-        blurTimeout = setTimeout(() => {
-            sendTabChangeMessage();
-        }, 1000);
-    });
+            window.addEventListener('blur', function() {
+                blurTimeout = setTimeout(() => {
+                    sendTabChangeMessage();
+                }, 1000);
+            });
 
-    window.addEventListener('focus', function() {
-        clearTimeout(blurTimeout);
-    });
+            window.addEventListener('focus', function() {
+                clearTimeout(blurTimeout);
+            });
 
-    function sendTabChangeMessage() {
-        if (chatSocket.readyState === WebSocket.OPEN) {
-            chatSocket.send(JSON.stringify({
-                'message': 'Student has changed the tab or window.',
-                'sender': username
-            }));
+            function sendTabChangeMessage() {
+                if (chatSocket.readyState === WebSocket.OPEN) {
+                    chatSocket.send(JSON.stringify({
+                        'message': 'Student has changed the tab or window.',
+                        'sender': username
+                    }));
+                }
+            }
         }
-    }
-}
 
-chatSocket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    const chatLog = document.querySelector('#chat-log');
-    const sender = data.sender || 'Unknown';
+        const examDuration = {{ exam.duration }};
 
-    if (sender !== username) {
-        chatLog.innerHTML += '<div class="received-message"><strong>(' + sender + '): </strong>' + data.message + '</div>';
-        chatLog.scrollTop = chatLog.scrollHeight;
+        document.addEventListener('DOMContentLoaded', function() {
+            const timerElement = document.getElementById('timer');
+            let duration = {{ exam.duration }} * 60;
 
-        if (isProctor && data.message === 'Student has changed the tab or window.') {
-            alert('Student has changed the tab or window!');
-        }
-    }
-};
+            function formatTime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            function updateTimer() {
+                timerElement.textContent = formatTime(duration);
+                if (duration > 0) {
+                    duration--;
+                    setTimeout(updateTimer, 1000);
+                } else {
+                    window.location.href = '{% url "test_end" %}';
+                }
+            }
+
+            updateTimer();
+        });
 
     </script>
 </body>
