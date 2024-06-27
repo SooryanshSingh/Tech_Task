@@ -1,41 +1,29 @@
 {% extends "home.html" %}
 {% load static %}
-{% block title %} Student Dashboard {% endblock %}
-
+{% block title %}Student Dashboard{% endblock %}
 {% block css %}
-<link rel="stylesheet" href="{% static 'dashboard.css' %}" />
-<style>
-    .disabled-link {
-        pointer-events: none;
-        color: #999; 
-    }
-</style>
+<link rel="stylesheet" href="{% static 'dashboard.css' %}">
 {% endblock %}
-
 {% block content %}
 <div class="container">
     <h1>Welcome to your Dashboard, {{ user.username }}</h1>
     <h2>These are the exams assigned to you</h2>
 
-    <ul>
+    <ul class="exam-list">
         {% for exam in assigned_exams %}
-            {% comment %}
-            Determine if the current time is within the exam's start and end time
-            %}
-            {% with current_time=now %}
-                {% if current_time >= exam.start_time and current_time <= exam.end_time %}
-                    <li>
-                        <h3><a href="{% url 'test_with_chat' exam_id=exam.id %}">{{ exam.title }}</a></h3>
-                        <p>{{ exam.description }}</p>
-                    </li>
+            <li class="exam-item">
+                <h3>{{ exam.title }}</h3>
+                <p>{{ exam.description }}</p>
+                {% if exam.attempted %}
+                    <p class="exam-status">You have attempted this exam.</p>
+                {% elif exam.has_ended %}
+                    <p class="exam-status">Exam has ended. You cannot attempt it anymore.</p>
+                {% elif exam.has_started %}
+                    <a href="{% url 'test_with_chat' exam_id=exam.id %}" class="exam-link">{{ exam.title }}</a>
                 {% else %}
-                    <li>
-                        <h3>{{ exam.title }}</h3>
-                        <p>{{ exam.description }}</p>
-                        <p>Exam not yet started or has ended.</p>
-                    </li>
+                    <p class="exam-status">Exam has not started yet.</p>
                 {% endif %}
-            {% endwith %}
+            </li>
         {% empty %}
             <li>No exams assigned yet.</li>
         {% endfor %}

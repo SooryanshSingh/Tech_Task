@@ -1,28 +1,29 @@
 {% extends "home.html" %}
 {% load static %}
-{% block title %} Proctor Dashboard {% endblock %}
+{% block title %}Proctor Dashboard{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'proctor_dashboard.css' %}" />
 {% endblock %}
-{% block content %}
 
+{% block content %}
 <div class="container">
     <h1>Welcome to your Dashboard, {{ user.username }}</h1>
     <h2>These are the exams created by the company {{ company.username }}</h2>
 
-    <ul>
+    <ul class="exam-list">
         {% for exam in exams %}
-            <li>
-                <a href="{% url 'test_with_chat' exam_id=exam.id %}">{{ exam.title }}</a>
-                <p>{{ exam.description }}</p>
-                <p>Start Time: {{ exam.start_time }}</p>
-                <p>End Time: {{ exam.end_time }}</p>
+            <li class="exam-item">
+                <a href="{% url 'test_with_chat' exam_id=exam.id %}" class="exam-title">{{ exam.title }}</a>
+                <p class="exam-description">{{ exam.description }}</p>
+                <div class="exam-details">
+                    <p><strong>Start Time:</strong> {{ exam.start_time }}</p>
+                    <p><strong>End Time:</strong> {{ exam.end_time }}</p>
+                </div>
             </li>
         {% empty %}
             <li>No exams created yet.</li>
         {% endfor %}
     </ul>
 </div>
-
 {% endblock %}

@@ -12,6 +12,8 @@ class Exam(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     duration = models.PositiveIntegerField(help_text="Duration in minutes")
+    attempted = models.BooleanField(default=False)  
+
 
     def __str__(self):
         return self.title

@@ -1,16 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from Home.models import Exam, Question, Answer, Response, Mark
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from Home.models import Exam, Answer, Response, Mark
 
 @login_required
 def test_with_chat(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id)
     questions = exam.questions.all()
     is_proctor = request.user.groups.filter(name='Proctor').exists()
-
+    exam.attempted = True
+    exam.save()
+   
     if request.method == 'POST':
         total_marks = 0
         answers = {}
+
         for question in questions:
             answer_id = request.POST.get(f'answer_{question.id}')
             if answer_id:
@@ -43,7 +47,8 @@ def test_with_chat(request, exam_id):
         
         Mark.objects.create(exam=exam, user=request.user, marks=total_marks)
 
-        return redirect('home')
+
+        return redirect('test_end')
     
     return render(request, 'test.html', {
         'exam': exam,
@@ -53,6 +58,8 @@ def test_with_chat(request, exam_id):
         'is_proctor': is_proctor,
     })
 
-
+@login_required
 def test_end(request):
-    return render(request, 'test-end.html')
+  
+
+    return render(request, 'test_end.html')

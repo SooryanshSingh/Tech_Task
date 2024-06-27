@@ -1,4 +1,4 @@
-/* dashboard.css */
+/* proctor_dashboard.css */
 
 body {
     font-family: 'Arial', sans-serif;
@@ -50,29 +50,25 @@ h2 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-h3 {
-    margin: 0;
-    font-size: 1.6rem;
-}
-
-p {
-    margin: 10px 0 0;
-    color: #555;
-}
-
-.exam-status {
-    font-style: italic;
-    color: #888;
-}
-
-.exam-link {
+.exam-title {
     color: #007bff;
+    font-size: 1.8rem;
     text-decoration: none;
-    font-weight: bold;
     transition: color 0.3s ease;
 }
 
-.exam-link:hover {
+.exam-title:hover {
     color: #0056b3;
     text-decoration: underline;
+}
+
+.exam-description {
+    color: #555;
+    margin-top: 10px;
+}
+
+.exam-time {
+    color: #888;
+    font-style: italic;
+    margin-top: 5px;
 }

@@ -29,9 +29,9 @@
           {% endif %}
           {% if user.is_authenticated %}
               <li><a href="{% url 'button2' %}">Logout</a></li>
-              <li class="welcome">Welcome: {{ user.username }}</li> <!-- Assuming 'username' is the correct attribute -->
+              <li class="welcome">Welcome: {{ user.username }}</li> 
           {% endif %}
-          {% if is_company %}
+          {% if is_company and not is_proctor %}
               <li><a href="{% url 'exam_list' %}" class="btn btn-primary">View Exams</a></li>
           {% endif %}
       </ul>

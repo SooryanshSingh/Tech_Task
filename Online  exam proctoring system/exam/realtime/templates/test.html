@@ -4,15 +4,11 @@
 <head>
     <title>{{ exam.title }}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'test.css' %}">
-    <style>
-        /* Add any additional CSS styles here */
-    </style>
 </head>
 <body>
     <h1>{{ exam.title }}</h1>
     <p>{{ exam.description }}</p>
 
-    <!-- Timer Container -->
     <div class="timer-container">
         <strong>Time Remaining:</strong>
         <span id="timer"></span>
@@ -63,6 +59,12 @@
             </div>
         </div>
     </form>
+
+    {% if is_proctor %}
+        <div class="close">
+            <button type="button" id="close-exam-button" class="centered-button">Close Exam</button>
+        </div>
+    {% endif %}
 
     <script>
         const roomName = "{{ room_name }}";
@@ -215,57 +217,47 @@
 
         const isProctor = {{ is_proctor|yesno:"true,false" }};
 
-        if (!isProctor) {
-            // Tab/Window change detection for students only
-            let blurTimeout;
-
-            window.addEventListener('blur', function() {
-                blurTimeout = setTimeout(() => {
-                    sendTabChangeMessage();
-                }, 1000);
+        if (isProctor) {
+            const closeExamButton = document.getElementById('close-exam-button');
+            closeExamButton.addEventListener('click', function() {
+                alert('The exam has been closed by the proctor.');
+                // Redirect to test_end URL for students if exam is closed
+                window.location.href = '{% url "test_end" %}';
             });
+        }
 
-            window.addEventListener('focus', function() {
-                clearTimeout(blurTimeout);
-            });
+        const examDuration = {{ exam.duration }};
+        let duration = {{ exam.duration }} * 60;
 
-            function sendTabChangeMessage() {
-                if (chatSocket.readyState === WebSocket.OPEN) {
-                    chatSocket.send(JSON.stringify({
-                        'message': 'Student has changed the tab or window.',
-                        'sender': username
-                    }));
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimer() {
+            const startTime = sessionStorage.getItem('examStartTime');
+            if (startTime === null) {
+                // If examStartTime is not set, set it now
+                sessionStorage.setItem('examStartTime', new Date().getTime());
+            }
+            const elapsedTime = Math.floor((new Date().getTime() - parseInt(startTime)) / 1000);
+            duration = examDuration * 60 - elapsedTime;
+
+            if (duration >= 0) {
+                document.getElementById('timer').textContent = formatTime(duration);
+                if (duration > 0) {
+                    setTimeout(updateTimer, 1000);
+                } else {
+                    // Exam time has ended, redirect to test_end
+                    window.location.href = '{% url "test_end" %}';
                 }
             }
         }
 
-        const examDuration = {{ exam.duration }};
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const timerElement = document.getElementById('timer');
-            let duration = {{ exam.duration }} * 60;
-
-            function formatTime(seconds) {
-                const hours = Math.floor(seconds / 3600);
-                const minutes = Math.floor((seconds % 3600) / 60);
-                const secs = seconds % 60;
-
-                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }
-
-            function updateTimer() {
-                timerElement.textContent = formatTime(duration);
-                if (duration > 0) {
-                    duration--;
-                    setTimeout(updateTimer, 1000);
-                } else {
-                    window.location.href = '{% url "test_end" %}';
-                }
-            }
-
-            updateTimer();
-        });
-
+        updateTimer();
     </script>
 </body>
 </html>

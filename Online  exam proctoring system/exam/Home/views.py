@@ -12,10 +12,14 @@ from .forms import QuestionForm, AnswerForm, ExamForm
 from .forms import ExamForm, QuestionForm, AnswerForm
 from .forms import ProctorEmailForm 
 from .models import ProctorEmail
+from django.utils import timezone  
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
     is_company = request.user.groups.filter(name='Company').exists()
-    return render(request, 'home.html', {'is_company': is_company})
+    is_proctor = request.user.groups.filter(name='Company').exists()
+
+    return render(request, 'home.html', {'is_company': is_company,'is_proctor':is_proctor})
 
 def about(request):
     return render(request, 'about.html')
@@ -107,17 +111,23 @@ def signup(request):
 
 
 def dashboard(request):
-    if request.user.is_authenticated and request.user.groups.filter(name='Student').exists():
-        assigned_exams = Exam.objects.filter(examinees=request.user)
+    user = request.user
+    current_time = timezone.now()
+    
+    assigned_exams = Exam.objects.filter(examinees=user)
 
-        context = {
-            'assigned_exams': assigned_exams
-        }
+    for exam in assigned_exams:
+        exam.has_started = exam.start_time <= current_time
+        exam.has_ended = exam.end_time < current_time
 
-        return render(request, 'dashboard.html', context)
-    else:
-        return redirect('home')
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+    
+    context = {
+        'user': user,
+        'assigned_exams': assigned_exams,
+        'current_time': current_time,
+    }
+
+    return render(request, 'dashboard.html', context)tore=True)
 
 def company_dashboard(request):
     if request.method == 'POST':
