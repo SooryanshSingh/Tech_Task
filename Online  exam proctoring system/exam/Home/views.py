@@ -127,7 +127,7 @@ def dashboard(request):
         'current_time': current_time,
     }
 
-    return render(request, 'dashboard.html', context)tore=True)
+    return render(request, 'dashboard.html', context)
 
 def company_dashboard(request):
     if request.method == 'POST':
@@ -332,55 +332,77 @@ def answer_delete(request, exam_id, question_id, answer_id):
     return render(request, 'answer_list.html', {'answer': answer, 'question': question, 'exam_id': exam_id})
 
 # views.py
+
 from django.shortcuts import render, redirect, get_object_or_404
+from django.forms import modelformset_factory, inlineformset_factory, BaseInlineFormSet
 from .models import Exam, Question, Answer
 from .forms import ExamForm, QuestionForm, AnswerForm
+from .forms import ExamForm, QuestionFormSet 
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Exam, Question, Answer
+from .forms import ExamForm, QuestionFormSet
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Exam, Question, Answer
+from .forms import ExamForm, QuestionFormSet
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Exam, Question, Answer
+from .forms import ExamForm, QuestionFormSet
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Exam, Question, Answer
+from .forms import ExamForm, QuestionFormSet
 
 def exam_manage(request, exam_id=None):
+    # Retrieve existing exam instance if editing
     if exam_id:
         exam = get_object_or_404(Exam, pk=exam_id)
-        existing_questions = exam.questions.all()  # Fetch existing questions for the exam
+        exam_form = ExamForm(request.POST or None, request.FILES or None, instance=exam)
+        question_formset = QuestionFormSet(request.POST or None, instance=exam)
     else:
         exam = None
-        existing_questions = []
+        exam_form = ExamForm(request.POST or None, request.FILES or None)
+        question_formset = QuestionFormSet(request.POST or None)
 
     if request.method == 'POST':
-        exam_form = ExamForm(request.POST, instance=exam)
-        if exam_form.is_valid():
+        if exam_form.is_valid() and question_formset.is_valid():
             exam = exam_form.save(commit=False)
-            exam.company = request.user
+            exam.company = request.user  # Set the company to the current user
             exam.save()
 
-            # Process questions and answers
-            for question_data in request.POST.getlist('question'):
-                question_text = question_data.get('question_text')
-                if question_text:
-                    question = Question.objects.create(exam=exam, question_text=question_text)
-                    
-                    # Process answers for this question
-                    for answer_data in question_data.getlist('answers'):
-                        answer_text = answer_data.get('test')  # Adjust to match your Answer model field
-                        is_correct = answer_data.get('is_correct')
-                        if answer_text:
-                            Answer.objects.create(question=question, test=answer_text, is_correct=is_correct == 'on')
+            for question_form in question_formset:
+                if question_form.is_valid():
+                    question = question_form.save(commit=False)
+                    question.exam = exam
+                    question.save()
 
-            return redirect('exam-list')  # Replace with your success URL
-        else:
-            # Handle form errors
-            pass
-    else:
-        initial_exam_data = exam.serialize() if exam else None
-        exam_form = ExamForm(instance=exam, initial=initial_exam_data)
-    
-    initial_question_data = []
-    for question in existing_questions:
-        answers_data = [{'test': answer.exam, 'is_correct': answer.is_correct} for answer in question.answers.all()]
-        initial_question_data.append({'question_text': question.question_text, 'answers': answers_data})
-    
-    context = {
-        'exam': exam,
+                    # Handle answers for this question
+                    # Assuming your formset doesn't directly provide 'answers'
+                    # You may need to adjust this based on your actual form structure
+                    answer_texts = question_form.cleaned_data.get('answers')  # Example assuming answers are handled this way
+
+                    if answer_texts:
+                        for text in answer_texts:
+                            if text.strip():  # Example handling of each answer text
+                                answer = Answer(question=question, text=text)
+                                answer.save()
+
+            return redirect('exam_list')
+
+    return render(request, 'exam_manage.html', {
         'exam_form': exam_form,
-        'existing_questions': existing_questions,
-        'initial_question_data': initial_question_data,
-    }
-    return render(request, 'exam_manage.html', context)
+        'question_formset': question_formset,
+        'exam': exam,
+    })
+
+
+
+def delete_exam(request, exam_id):
+    exam = Exam.objects.get(pk=exam_id)
+    if request.method == 'POST':
+        exam.delete()
+        return redirect('exam_list')  
+
+    return render(request, 'delete_exam.html', {'exam': exam})

@@ -25,6 +25,14 @@
             text-decoration: none;
         }
     </style>
+    <script>
+        window.history.forward();
+        function noBack() {
+            window.history.forward();
+        }
+        setTimeout("noBack()", 0);
+        window.onunload = function () { null };
+    </script>
 </head>
 <body>
     <div class="message">

@@ -8,8 +8,9 @@ def test_with_chat(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id)
     questions = exam.questions.all()
     is_proctor = request.user.groups.filter(name='Proctor').exists()
-    exam.attempted = True
-    exam.save()
+    if exam.attempted:
+        return redirect('test_end', exam_id=exam.id) 
+    
    
     if request.method == 'POST':
         total_marks = 0
@@ -48,7 +49,7 @@ def test_with_chat(request, exam_id):
         Mark.objects.create(exam=exam, user=request.user, marks=total_marks)
 
 
-        return redirect('test_end')
+        return redirect('test_end', exam_id=exam.id) 
     
     return render(request, 'test.html', {
         'exam': exam,
@@ -59,7 +60,11 @@ def test_with_chat(request, exam_id):
     })
 
 @login_required
-def test_end(request):
+def test_end(request,exam_id):
+    exam = get_object_or_404(Exam, id=exam_id)
+    exam.attempted = True
+    exam.save()
+
   
 
     return render(request, 'test_end.html')

@@ -1,9 +1,35 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>{{ exam.title }}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'test.css' %}">
+    <style>
+       
+
+        .chat-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+            z-index: 1000;
+            max-width: 300px; /* Adjust as needed */
+        }
+
+        .chat-container.active {
+            display: block;
+        }
+
+        .chat-log {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
     <h1>{{ exam.title }}</h1>
@@ -14,6 +40,7 @@
         <span id="timer"></span>
     </div>
 
+  
     <form id="exam-form" method="post" action="{% url 'test_with_chat' exam.id %}">
         {% csrf_token %}
         <div class="container">
@@ -53,7 +80,7 @@
             <div class="chat-container" id="chat-container">
                 <button type="button" class="chat-close-button" id="chat-close-button">Close Chat</button>
                 <h2>Chat with Proctor</h2>
-                <div id="chat-log"></div>
+                <div class="chat-log" id="chat-log"></div>
                 <input id="chat-message-input" type="text" name="chat_message" placeholder="Type your message...">
                 <button id="chat-message-submit">Send</button>
             </div>
@@ -63,6 +90,14 @@
     {% if is_proctor %}
         <div class="close">
             <button type="button" id="close-exam-button" class="centered-button">Close Exam</button>
+        </div>
+    {% endif %}
+    {% if is_proctor %}
+
+    <div class="main-grid-container">
+        <div class="video-container">
+        <div><video id="student-video" autoplay playsinline></video>   
+        </div>
         </div>
     {% endif %}
 
@@ -162,6 +197,7 @@
                 input.checked = false;
             });
             checkAllAnswered();
+            storeAnswers(); // Clear stored answers
         });
 
         function showQuestion(questionId) {
@@ -209,25 +245,64 @@
         }
 
         radioInputs.forEach(input => {
-            input.addEventListener('change', checkAllAnswered);
+            input.addEventListener('change', function() {
+                storeAnswers(); // Store answers on change
+                checkAllAnswered();
+            });
         });
 
-        checkAllAnswered();
-        updateNavigationButtons();
+        function storeAnswers() {
+            const answers = {};
+            radioInputs.forEach(input => {
+                if (input.checked) {
+                    answers[input.name] = input.value;
+                }
+            });
+            sessionStorage.setItem('examAnswers', JSON.stringify(answers));
+        }
 
-        const isProctor = {{ is_proctor|yesno:"true,false" }};
+        function restoreAnswers() {
+            const storedAnswers = sessionStorage.getItem('examAnswers');
+            if (storedAnswers) {
+                const answers = JSON.parse(storedAnswers);
+                Object.keys(answers).forEach(name => {
+                    const input = document.querySelector(`input[name="${name}"][value="${answers[name]}"]`);
+                    if (input) {
+                        input.checked = true;
+                    }
+                });
+            }
+            checkAllAnswered(); 
+        }
 
-        if (isProctor) {
+        restoreAnswers(); 
+
+        const is_Proctor = {{ is_proctor|yesno:"true,false" }};
+
+        if (is_Proctor) {
             const closeExamButton = document.getElementById('close-exam-button');
             closeExamButton.addEventListener('click', function() {
                 alert('The exam has been closed by the proctor.');
-                // Redirect to test_end URL for students if exam is closed
-                window.location.href = '{% url "test_end" %}';
+                window.location.href = '{% url "test_end" exam.id %}';
             });
         }
 
         const examDuration = {{ exam.duration }};
-        let duration = {{ exam.duration }} * 60;
+        let duration = examDuration * 60;
+        let startTime = sessionStorage.getItem('examStartTime');
+        let elapsedTime = 0;
+
+        if (startTime === null || sessionStorage.getItem('examStarted') === null) {
+            startTime = new Date().getTime();
+            sessionStorage.setItem('examStartTime', startTime);
+            sessionStorage.setItem('examStarted', 'true');
+        } else {
+            startTime = parseInt(startTime);
+            elapsedTime = Math.floor((new Date().getTime() - startTime) / 1000);
+        }
+
+        // Calculate time left based on elapsed time
+        let timeLeft = duration - elapsedTime;
 
         function formatTime(seconds) {
             const hours = Math.floor(seconds / 3600);
@@ -238,26 +313,86 @@
         }
 
         function updateTimer() {
-            const startTime = sessionStorage.getItem('examStartTime');
-            if (startTime === null) {
-                // If examStartTime is not set, set it now
-                sessionStorage.setItem('examStartTime', new Date().getTime());
-            }
-            const elapsedTime = Math.floor((new Date().getTime() - parseInt(startTime)) / 1000);
-            duration = examDuration * 60 - elapsedTime;
-
-            if (duration >= 0) {
-                document.getElementById('timer').textContent = formatTime(duration);
-                if (duration > 0) {
-                    setTimeout(updateTimer, 1000);
-                } else {
-                    // Exam time has ended, redirect to test_end
-                    window.location.href = '{% url "test_end" %}';
-                }
+            timeLeft--;
+            if (timeLeft >= 0) {
+                document.getElementById('timer').textContent = formatTime(timeLeft);
+                sessionStorage.setItem('examStartTime', startTime);
+                setTimeout(updateTimer, 1000);
+            } else {
+                window.location.href = '{% url "test_end" exam.id %}';
             }
         }
 
         updateTimer();
+        const constraints = {
+    video: true,
+    audio: true
+};
+const signalingSocket = new WebSocket(
+    'ws://' + window.location.hostname + ':8000/ws/signaling/' + roomName + '/'
+);
+let pc;
+
+signalingSocket.onmessage = async function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.type === 'offer' && !is_Proctor) {
+        await pc.setRemoteDescription(new RTCSessionDescription(data));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        signalingSocket.send(JSON.stringify({
+            type: 'answer',
+            sdp: pc.localDescription
+        }));
+    } else if (data.type === 'answer' && is_Proctor) {
+        await pc.setRemoteDescription(new RTCSessionDescription(data));
+    } else if (data.type === 'candidate') {
+        try {
+            await pc.addIceCandidate(data.candidate);
+        } catch (e) {
+            console.error('Error adding received ice candidate', e);
+        }
+    }
+};
+
+signalingSocket.onclose = function(e) {
+    console.error('Signaling socket closed unexpectedly');
+};
+
+async function startCall() {
+    pc = new RTCPeerConnection();
+
+    pc.onicecandidate = ({ candidate }) => {
+        if (candidate) {
+            signalingSocket.send(JSON.stringify({
+                type: 'candidate',
+                candidate: candidate
+            }));
+        }
+    };
+
+    if (is_Proctor) {
+        pc.ontrack = (event) => {
+            const video = document.getElementById('student-video');
+            video.srcObject = event.streams[0];
+        };
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+    if (!is_Proctor) {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        signalingSocket.send(JSON.stringify({
+            type: 'offer',
+            sdp: pc.localDescription
+        }));
+    }
+}
+
+startCall();
+
     </script>
 </body>
 </html>

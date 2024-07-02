@@ -1,15 +1,39 @@
-#v {
-  width: 50px;
+/* proctor_dashboard.css */
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f6f9;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 900px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+.container:hover {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
 }
 
 h1, h2 {
-  color: red;
+  color: #e74c3c;
   font-family: 'Brush Script MT', cursive;
   font-weight: bold;
 }
 
+#v {
+  width: 50px;
+}
+
 .container {
-  background-color: skyblue; 
+  background-color: skyblue;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -70,13 +94,12 @@ h1, h2 {
   perspective: 1000px;
   transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   cursor: pointer;
-  display: flex; 
-  flex-direction: column; 
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
   margin-bottom: 20px;
   margin-left: 180px;
-
 }
 
 .card-content {
@@ -141,14 +164,6 @@ h1, h2 {
 
 .card:hover:after {
   transform: translateX(100%);
-}
-
-#A {
-  width: 500px;
-}
-
-#B {
-  width: 470px;
 }
 
 ul {
@@ -217,7 +232,6 @@ ul {
   transform: translateX(10px);
 }
 
-
 .bard {
   position: relative;
   width: 190px;
@@ -231,7 +245,7 @@ ul {
   border-radius: 15px;
   cursor: pointer;
   color: #000000;
-  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   margin-left: 50px;
 }
 
@@ -285,38 +299,192 @@ ul {
 }
 
 .bard:hover {
-  transform: scale(1.05); 
+  transform: scale(1.05);
 }
-
+/* Navbar CSS */
 
 nav ul {
   list-style-type: none;
-  background-color: hsl(0,0%,25%);
+  background-color: hsl(0, 0%, 25%);
   padding: 0;
   margin: 0;
   overflow: hidden;
-  text-align: center; 
+  text-align: center;
+  position: relative; /* Ensure relative positioning for absolute child */
+  z-index: 1000; /* Ensure navbar is above other content */
+}
+
+nav ul li {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+nav ul li:last-child {
+  margin-right: 0;
 }
 
 nav a {
   color: white;
   text-decoration: none;
-  padding: 15px 20px; 
-  display: inline-block;}
+  padding: 15px 20px;
+  display: inline-block;
+}
 
 nav a:hover {
-  background-color: hsl(0,0%,10%);
+  background-color: hsl(0, 0%, 10%);
+}
+nav a:hover {
+  background-color: hsl(0, 0%, 10%);
 }
 
-nav li {
-  display: inline-block; 
-  margin-right: 10px; 
+/* Dropdown CSS */
+
+nav .dropdown {
+  position: relative;
+  display: inline-block;
 }
 
-nav li:last-child {
-  margin-right: 0;
+nav .dropbtn {
+  background-color: hsl(0, 0%, 25%);
+  color: white;
+  padding: 15px 20px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
 }
 
-nav li.welcome {
-  color: white; 
+nav .dropbtn:hover {
+  background-color: hsl(0, 0%, 10%);
+}
+
+nav .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: hsl(0, 0%, 20%);
+  min-width: 200px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1001; /* Ensure dropdown is above navbar */
+  left: 0; /* Position dropdown to the left */
+  top: 100%; /* Position dropdown below the button */
+}
+
+nav .dropdown-content p,
+nav .dropdown-content a {
+  color: white;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+nav .dropdown-content p:hover,
+nav .dropdown-content a:hover {
+  background-color: hsl(0, 0%, 10%);
+}
+
+nav .dropdown:hover .dropdown-content {
+  display: block;
+}
+/* Adjusted CSS for Dropdown */
+
+nav .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+nav .dropbtn {
+  background-color: #333; /* Adjust button background color */
+  color: white;
+  padding: 15px 20px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+down-content {
+  display: block;
+}
+
+/* Body and general styling */
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f6f9;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.navbar {
+  background-color: hsl(0, 0%, 25%);
+  padding: 10px 0;
+  text-align: center;
+}
+
+.navbar ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar ul li {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.navbar ul li a {
+  color: white;
+  text-decoration: none;
+  padding: 10px 20px;
+  display: inline-block;
+}
+
+.navbar ul li a:hover {
+  background-color: hsl(0, 0%, 10%);
+}
+
+/* Dropdown styling */
+.navbar .dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.navbar .dropbtn {
+  background-color: #333;
+  color: white;
+  padding: 15px 20px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar .dropbtn:hover {
+  background-color: #555;
+}
+
+.navbar .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 200px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  left: 0;
+  top: 100%;
+}
+
+.navbar .dropdown-content p,
+.navbar .dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.navbar .dropdown-content p:hover,
+.navbar .dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+.navbar .dropdown:hover .dropdown-content {
+  display: block;
 }

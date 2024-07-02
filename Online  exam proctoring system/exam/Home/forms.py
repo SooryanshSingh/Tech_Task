@@ -31,8 +31,16 @@ class QuestionForm(forms.ModelForm):
         model = Question
         fields = ['text']
 
-from django import forms
-from .models import Exam
+AnswerFormSet = inlineformset_factory(
+    Question,  # Parent model
+    Answer,    # Child model
+    form=AnswerForm,
+    fields=['text', 'is_correct'],
+    extra=1,   # Number of extra forms
+    can_delete=True,
+    min_num=1, # Minimum number of forms
+    validate_min=True,
+)
 
 class ExamForm(forms.ModelForm):
     start_time = forms.DateTimeField(
@@ -54,3 +62,19 @@ class ProctorEmailForm(forms.ModelForm):
     class Meta:
         model = ProctorEmail
         fields = ['email']
+
+class BaseQuestionFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+
+QuestionFormSet = inlineformset_factory(
+    Exam,        # Parent model (you may change this to suit your project)
+    Question,    # Child model
+    formset=BaseQuestionFormSet,
+    form=QuestionForm,
+    fields=['text'],
+    extra=1,     # Number of extra forms
+    can_delete=True,
+    min_num=1,   # Minimum number of forms
+    validate_min=True,
+)

@@ -203,15 +203,32 @@ color: white; /* White text */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
 }
 
-.centered-button {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
+.close{
+    text-align: center; 
+    position: fixed; 
+    top: 20px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    z-index: 1000;  
+    background-color: #fff; 
     padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    cursor: pointer;
+    border-radius: 8px; 
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+}
+
+.video-grid-container{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    background-color: black;
+}
+
+.main-grid-container{
+    display:grid;
+    grid-template-columns: 60% 20%;
+}
+
+video{
+    border-radius: 25%;
+    background-color: black;
+    
 }
