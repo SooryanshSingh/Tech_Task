@@ -18,7 +18,7 @@
             padding: 10px;
             display: none;
             z-index: 1000;
-            max-width: 300px; /* Adjust as needed */
+            max-width: 300px; 
         }
 
         .chat-container.active {
@@ -279,13 +279,33 @@
 
         const is_Proctor = {{ is_proctor|yesno:"true,false" }};
 
-        if (is_Proctor) {
-            const closeExamButton = document.getElementById('close-exam-button');
-            closeExamButton.addEventListener('click', function() {
-                alert('The exam has been closed by the proctor.');
-                window.location.href = '{% url "test_end" exam.id %}';
-            });
+if (is_Proctor) {
+    const closeExamButton = document.getElementById('close-exam-button');
+    closeExamButton.addEventListener('click', function() {
+        if (confirm('Are you sure you want to close the exam?')) {
+            alert('The exam has been closed by the proctor.');
+            window.location.href = '{% url "test_end" exam.id %}';
         }
+    });
+
+    // Listen for messages from WebSocket to close the exam for students
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.hostname + ':8000/ws/chat/' + roomName + '/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'close_exam') {
+            alert('The exam has been closed by the proctor.');
+            window.location.reload(); // Reloads the page to reflect exam closure
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+}
+
 
         const examDuration = {{ exam.duration }};
         let duration = examDuration * 60;
@@ -333,25 +353,37 @@ const signalingSocket = new WebSocket(
 );
 let pc;
 
-signalingSocket.onmessage = async function(e) {
-    const data = JSON.parse(e.data);
+signalingSocket.onmessage = function(event) {
+    try {
+        var message = JSON.parse(event.data);
+        if (message.type === 'offer') {
+            var sdp = message.sdp;
+            console.log("Received SDP offer:", sdp);
 
-    if (data.type === 'offer' && !is_Proctor) {
-        await pc.setRemoteDescription(new RTCSessionDescription(data));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        signalingSocket.send(JSON.stringify({
-            type: 'answer',
-            sdp: pc.localDescription
-        }));
-    } else if (data.type === 'answer' && is_Proctor) {
-        await pc.setRemoteDescription(new RTCSessionDescription(data));
-    } else if (data.type === 'candidate') {
-        try {
-            await pc.addIceCandidate(data.candidate);
-        } catch (e) {
-            console.error('Error adding received ice candidate', e);
+            // Assume pc is your RTCPeerConnection object
+            pc.setRemoteDescription(new RTCSessionDescription(sdp))
+              .then(function() {
+                  console.log("Remote description successfully set.");
+                  // Proceed with ICE candidates or other steps
+              })
+              .catch(function(error) {
+                  console.error("Error setting remote description:", error);
+              });
+        } else if (message.type === 'candidate') {
+            var candidate = message.candidate;
+            console.log("Received ICE candidate:", candidate);
+
+            // Assume pc is your RTCPeerConnection object
+            pc.addIceCandidate(new RTCIceCandidate(candidate))
+              .then(function() {
+                  console.log("ICE candidate added successfully.");
+              })
+              .catch(function(error) {
+                  console.error("Error adding ICE candidate:", error);
+              });
         }
+    } catch (error) {
+        console.error("Error parsing JSON:", error);
     }
 };
 
@@ -362,32 +394,62 @@ signalingSocket.onclose = function(e) {
 async function startCall() {
     pc = new RTCPeerConnection();
 
-    pc.onicecandidate = ({ candidate }) => {
-        if (candidate) {
+    pc.onicecandidate = function(event) {
+        if (event.candidate && signalingSocket.readyState === WebSocket.OPEN) {
             signalingSocket.send(JSON.stringify({
                 type: 'candidate',
-                candidate: candidate
+                candidate: event.candidate
             }));
         }
     };
 
     if (is_Proctor) {
-        pc.ontrack = (event) => {
+        pc.ontrack = function(event) {
             const video = document.getElementById('student-video');
             video.srcObject = event.streams[0];
         };
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        stream.getTracks().forEach(track => pc.addTrack(track, stream));
 
-    if (!is_Proctor) {
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        signalingSocket.send(JSON.stringify({
-            type: 'offer',
-            sdp: pc.localDescription
-        }));
+        if (!is_Proctor) {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            signalingSocket.send(JSON.stringify({
+                type: 'offer',
+                sdp: pc.localDescription
+            }));
+        }
+    } catch (error) {
+        console.error('Error starting call:', error);
+    }
+}
+
+const isProctor = {{ is_proctor|yesno:"true,false" }};
+
+if (!isProctor) {
+    // Tab/Window change detection for students only
+    let blurTimeout;
+
+    window.addEventListener('blur', function() {
+        blurTimeout = setTimeout(() => {
+            sendTabChangeMessage();
+        }, 1000);
+    });
+
+    window.addEventListener('focus', function() {
+        clearTimeout(blurTimeout);
+    });
+
+    function sendTabChangeMessage() {
+        if (chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                'message': 'Student has changed the tab or window.',
+                'sender': username
+            }));
+        }
     }
 }
 
