@@ -1,14 +1,13 @@
+
+
 {% load static %}
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{{ exam.title }}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'test.css' %}">
     <style>
-       
-
         .chat-container {
             position: absolute;
             top: 10px;
@@ -18,7 +17,7 @@
             padding: 10px;
             display: none;
             z-index: 1000;
-            max-width: 300px; 
+            max-width: 300px;
         }
 
         .chat-container.active {
@@ -32,83 +31,83 @@
     </style>
 </head>
 <body>
-    <h1>{{ exam.title }}</h1>
-    <p>{{ exam.description }}</p>
+<h1>{{ exam.title }}</h1>
+<p>{{ exam.description }}</p>
 
-    <div class="timer-container">
-        <strong>Time Remaining:</strong>
-        <span id="timer"></span>
-    </div>
+<div class="timer-container">
+    <strong>Time Remaining:</strong>
+    <span id="timer"></span>
+</div>
 
-  
-    <form id="exam-form" method="post" action="{% url 'test_with_chat' exam.id %}">
-        {% csrf_token %}
-        <div class="container">
-            <div class="question-nav">
-                <h3>Questions</h3>
-                <ul>
-                    {% for question in questions %}
-                        <li><a href="#" class="question-link" data-question-id="question_{{ question.id }}">Question {{ forloop.counter }}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div class="questions">
+<form id="exam-form" method="post" action="{% url 'test_with_chat' exam.id %}">
+    {% csrf_token %}
+    <div class="container">
+        <div class="question-nav">
+            <h3>Questions</h3>
+            <ul>
                 {% for question in questions %}
-                    <div id="question_{{ question.id }}" class="question-item{% if forloop.first %} active{% endif %}">
-                        <h2>Question {{ forloop.counter }}:</h2>
-                        <p>{{ question.text }}</p>
-                        <ul>
-                            {% for answer in question.answers.all %}
-                                <li>
-                                    <label>
-                                        <input type="radio" name="answer_{{ question.id }}" value="{{ answer.id }}">
-                                        {{ answer.text }}
-                                    </label>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                    <li><a href="#" class="question-link"
+                          data-question-id="question_{{ question.id }}">Question {{ forloop.counter }}</a></li>
                 {% endfor %}
-                <div>
-                    <button type="button" id="prev-button" disabled>Previous</button>
-                    <button type="button" id="next-button">Next</button>
-                    <button type="button" id="clear-button">Clear Response</button>
+            </ul>
+        </div>
+        <div class="questions">
+            {% for question in questions %}
+                <div id="question_{{ question.id }}"
+                     class="question-item{% if forloop.first %} active{% endif %}">
+                    <h2>Question {{ forloop.counter }}:</h2>
+                    <p>{{ question.text }}</p>
+                    <ul>
+                        {% for answer in question.answers.all %}
+                            <li>
+                                <label>
+                                    <input type="radio" name="answer_{{ question.id }}" value="{{ answer.id }}">
+                                    {{ answer.text }}
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                <input type="submit" value="Submit Answers" class="submit-button" disabled>
+            {% endfor %}
+            <div>
+                <button type="button" id="prev-button" disabled>Previous</button>
+                <button type="button" id="next-button">Next</button>
+                <button type="button" id="clear-button">Clear Response</button>
             </div>
-            <button type="button" class="chat-toggle-button" id="chat-toggle-button">Chat with Proctor</button>
-            <div class="chat-container" id="chat-container">
-                <button type="button" class="chat-close-button" id="chat-close-button">Close Chat</button>
-                <h2>Chat with Proctor</h2>
-                <div class="chat-log" id="chat-log"></div>
-                <input id="chat-message-input" type="text" name="chat_message" placeholder="Type your message...">
-                <button id="chat-message-submit">Send</button>
-            </div>
+            <input type="submit" value="Submit Answers" class="submit-button" disabled>
         </div>
-    </form>
+        <button type="button" class="chat-toggle-button" id="chat-toggle-button">Chat with Proctor</button>
+        <div class="chat-container" id="chat-container">
+            <button type="button" class="chat-close-button" id="chat-close-button">Close Chat</button>
+            <h2>Chat with Proctor</h2>
+            <div class="chat-log" id="chat-log"></div>
+            <input id="chat-message-input" type="text" name="chat_message" placeholder="Type your message...">
+            <button id="chat-message-submit">Send</button>
+        </div>
+    </div>
+</form>
 
-    {% if is_proctor %}
-        <div class="close">
-            <button type="button" id="close-exam-button" class="centered-button">Close Exam</button>
-        </div>
-    {% endif %}
-    {% if is_proctor %}
+{% if is_proctor %}
+    <div class="close">
+        <button type="button" id="close-exam-button" class="centered-button">Close Exam</button>
+    </div>
+{% endif %}
 
     <div class="main-grid-container">
         <div class="video-container">
-        <div><video id="student-video" autoplay playsinline></video>   
+            <div><video id="student-video" autoplay playsinline></video></div>
         </div>
-        </div>
-    {% endif %}
+    </div>
 
-    <script>
-        const roomName = "{{ room_name }}";
-        const username = "{{ user.username }}";
-        const chatSocket = new WebSocket(
-            'ws://' + window.location.hostname + ':8000/ws/chat/' + roomName + '/'
-        );
+<script>
 
-        chatSocket.onmessage = function(e) {
+    const roomName = "{{ room_name }}";
+    const username = "{{ user.username }}";
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.hostname + ':8000/ws/chat/' + roomName + '/'
+    );
+
+       chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             const chatLog = document.querySelector('#chat-log');
             const sender = data.sender || 'Unknown';
@@ -119,139 +118,142 @@
             }
         };
 
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
 
-        document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {
-                document.querySelector('#chat-message-submit').click();
-            }
-        };
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
 
-        document.querySelector('#chat-message-submit').onclick = function(e) {
-            e.preventDefault();
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            if (message.trim()) {
-                const chatLog = document.querySelector('#chat-log');
-                chatLog.innerHTML += '<div class="sent-message"><strong>(' + username + '): </strong>' + message + '</div>';
-                chatLog.scrollTop = chatLog.scrollHeight;
-                if (chatSocket.readyState === WebSocket.OPEN) {
-                    chatSocket.send(JSON.stringify({
-                        'message': message,
-                        'sender': username
-                    }));
-                } else {
-                    console.error('WebSocket is not open. Message not sent.');
-                }
-                messageInputDom.value = '';
-            }
-        };
-
-        const chatToggleButton = document.getElementById('chat-toggle-button');
-        const chatCloseButton = document.getElementById('chat-close-button');
-        const chatContainer = document.getElementById('chat-container');
-
-        chatToggleButton.onclick = function(e) {
-            chatContainer.classList.add('active');
-            chatToggleButton.style.display = 'none';
-        };
-
-        chatCloseButton.onclick = function(e) {
-            chatContainer.classList.remove('active');
-            chatToggleButton.style.display = 'block';
-        };
-
-        const questionLinks = document.querySelectorAll('.question-link');
-        const questionItems = document.querySelectorAll('.question-item');
-        let currentQuestionIndex = 0;
-
-        questionLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const questionId = this.dataset.questionId;
-                showQuestion(questionId);
-            });
-        });
-
-        document.getElementById('prev-button').addEventListener('click', function() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                showQuestionByIndex(currentQuestionIndex);
-            }
-        });
-
-        document.getElementById('next-button').addEventListener('click', function() {
-            if (currentQuestionIndex < questionItems.length - 1) {
-                currentQuestionIndex++;
-                showQuestionByIndex(currentQuestionIndex);
-            }
-        });
-
-        document.getElementById('clear-button').addEventListener('click', function() {
-            const currentQuestion = questionItems[currentQuestionIndex];
-            const radioInputs = currentQuestion.querySelectorAll('input[type="radio"]');
-            radioInputs.forEach(input => {
-                input.checked = false;
-            });
-            checkAllAnswered();
-            storeAnswers(); // Clear stored answers
-        });
-
-        function showQuestion(questionId) {
-            questionItems.forEach(item => {
-                item.classList.remove('active');
-                if (item.id === questionId) {
-                    item.classList.add('active');
-                    currentQuestionIndex = Array.from(questionItems).indexOf(item);
-                }
-            });
-            updateNavigationButtons();
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {
+            document.querySelector('#chat-message-submit').click();
         }
+    };
 
-        function showQuestionByIndex(index) {
-            questionItems.forEach(item => {
-                item.classList.remove('active');
-            });
-            questionItems[index].classList.add('active');
-            updateNavigationButtons();
-        }
-
-        function updateNavigationButtons() {
-            const prevButton = document.getElementById('prev-button');
-            const nextButton = document.getElementById('next-button');
-
-            prevButton.disabled = currentQuestionIndex === 0;
-            nextButton.disabled = currentQuestionIndex === questionItems.length - 1;
-        }
-
-        const submitButton = document.querySelector('.submit-button');
-        const radioInputs = document.querySelectorAll('input[type="radio"]');
-
-        function checkAllAnswered() {
-            const answeredQuestions = new Set();
-            radioInputs.forEach(input => {
-                if (input.checked) {
-                    answeredQuestions.add(input.name);
-                }
-            });
-            if (answeredQuestions.size === questionItems.length) {
-                submitButton.disabled = false;
+    document.querySelector('#chat-message-submit').onclick = function (e) {
+        e.preventDefault();
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        if (message.trim()) {
+            const chatLog = document.querySelector('#chat-log');
+            chatLog.innerHTML += '<div class="sent-message"><strong>(' + username + '): </strong>' + message + '</div>';
+            chatLog.scrollTop = chatLog.scrollHeight;
+            if (chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({
+                    'message': message,
+                    'sender': username
+                }));
             } else {
-                submitButton.disabled = true;
+                console.error('WebSocket is not open. Message not sent.');
             }
+            messageInputDom.value = '';
         }
+    };
 
-        radioInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                storeAnswers(); // Store answers on change
-                checkAllAnswered();
-            });
+    const chatToggleButton = document.getElementById('chat-toggle-button');
+    const chatCloseButton = document.getElementById('chat-close-button');
+    const chatContainer = document.getElementById('chat-container');
+
+    chatToggleButton.onclick = function (e) {
+        chatContainer.classList.add('active');
+        chatToggleButton.style.display = 'none';
+    };
+
+    chatCloseButton.onclick = function (e) {
+        chatContainer.classList.remove('active');
+        chatToggleButton.style.display = 'block';
+    };
+
+    const questionLinks = document.querySelectorAll('.question-link');
+    const questionItems = document.querySelectorAll('.question-item');
+    let currentQuestionIndex = 0;
+
+    questionLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const questionId = this.dataset.questionId;
+            showQuestion(questionId);
         });
+    });
 
-        function storeAnswers() {
+    document.getElementById('prev-button').addEventListener('click', function () {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestionByIndex(currentQuestionIndex);
+        }
+    });
+
+    document.getElementById('next-button').addEventListener('click', function () {
+        if (currentQuestionIndex < questionItems.length - 1) {
+            currentQuestionIndex++;
+            showQuestionByIndex(currentQuestionIndex);
+        }
+    });
+
+    document.getElementById('clear-button').addEventListener('click', function () {
+        const currentQuestion = questionItems[currentQuestionIndex];
+        const radioInputs = currentQuestion.querySelectorAll('input[type="radio"]');
+        radioInputs.forEach(input => {
+            input.checked = false;
+        });
+        checkAllAnswered();
+        storeAnswers(); // Clear stored answers
+    });
+
+    function showQuestion(questionId) {
+        questionItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.id === questionId) {
+                item.classList.add('active');
+                currentQuestionIndex = Array.from(questionItems).indexOf(item);
+            }
+        });
+        updateNavigationButtons();
+    }
+
+    function showQuestionByIndex(index) {
+        questionItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        questionItems[index].classList.add('active');
+        updateNavigationButtons();
+    }
+
+    function updateNavigationButtons() {
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+
+        prevButton.disabled = currentQuestionIndex === 0;
+        nextButton.disabled = currentQuestionIndex === questionItems.length - 1;
+    }
+
+    const submitButton = document.querySelector('.submit-button');
+    const radioInputs = document.querySelectorAll('input[type="radio"]');
+
+    function checkAllAnswered() {
+        const answeredQuestions = new Set();
+        radioInputs.forEach(input => {
+            if (input.checked) {
+                answeredQuestions.add(input.name);
+            }
+        });
+        if (answeredQuestions.size === questionItems.length) {
+            submitButton.disabled = false;
+        } else {
+            submitButton.disabled = true;
+        }
+    }
+
+    radioInputs.forEach(input => {
+        input.addEventListener('change', function () {
+            storeAnswers(); // Store answers on change
+            checkAllAnswered();
+        });
+    });
+    function storeAnswers() {
             const answers = {};
             radioInputs.forEach(input => {
                 if (input.checked) {
@@ -275,186 +277,197 @@
             checkAllAnswered(); 
         }
 
-        restoreAnswers(); 
-
-        const is_Proctor = {{ is_proctor|yesno:"true,false" }};
-
-if (is_Proctor) {
-    const closeExamButton = document.getElementById('close-exam-button');
-    closeExamButton.addEventListener('click', function() {
-        if (confirm('Are you sure you want to close the exam?')) {
-            alert('The exam has been closed by the proctor.');
-            window.location.href = '{% url "test_end" exam.id %}';
-        }
-    });
-
-    // Listen for messages from WebSocket to close the exam for students
-    const chatSocket = new WebSocket(
-        'ws://' + window.location.hostname + ':8000/ws/chat/' + roomName + '/'
-    );
-
-    chatSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        if (data.type === 'close_exam') {
-            alert('The exam has been closed by the proctor.');
-            window.location.reload(); // Reloads the page to reflect exam closure
-        }
-    };
-
-    chatSocket.onclose = function(e) {
-        console.error('Chat socket closed unexpectedly');
-    };
-}
+        
 
 
-        const examDuration = {{ exam.duration }};
-        let duration = examDuration * 60;
-        let startTime = sessionStorage.getItem('examStartTime');
-        let elapsedTime = 0;
+    window.onload = function () {
+        restoreAnswers();     
 
-        if (startTime === null || sessionStorage.getItem('examStarted') === null) {
-            startTime = new Date().getTime();
-            sessionStorage.setItem('examStartTime', startTime);
-            sessionStorage.setItem('examStarted', 'true');
+        // Initialize timer
+        const timerElement = document.getElementById('timer');
+        const startTime = sessionStorage.getItem('startTime');
+        let initialTime = 60 * {{ exam.duration }}; // Initial duration in seconds
+        if (startTime) {
+            initialTime = Math.max(0, initialTime - (Date.now() - parseInt(startTime)) / 1000);
         } else {
-            startTime = parseInt(startTime);
-            elapsedTime = Math.floor((new Date().getTime() - startTime) / 1000);
-        }
-
-        // Calculate time left based on elapsed time
-        let timeLeft = duration - elapsedTime;
-
-        function formatTime(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            sessionStorage.setItem('startTime', Date.now());
         }
 
         function updateTimer() {
-            timeLeft--;
-            if (timeLeft >= 0) {
-                document.getElementById('timer').textContent = formatTime(timeLeft);
-                sessionStorage.setItem('examStartTime', startTime);
-                setTimeout(updateTimer, 1000);
-            } else {
-                window.location.href = '{% url "test_end" exam.id %}';
-            }
-        }
+    const minutes = Math.floor(initialTime / 60);
+    let seconds = initialTime % 60;
+    seconds = seconds.toFixed(0); // Round seconds to nearest integer
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    timerElement.textContent = `${minutes}:${seconds}`;
+    if (initialTime <= 0) {
+        clearInterval(timerInterval);
+        submitButton.click(); // Automatically submit when time runs out
+    }
+    initialTime--;
+}
 
         updateTimer();
-        const constraints = {
-    video: true,
-    audio: true
-};
-const signalingSocket = new WebSocket(
-    'ws://' + window.location.hostname + ':8000/ws/signaling/' + roomName + '/'
-);
-let pc;
+        const timerInterval = setInterval(updateTimer, 1000);
 
-signalingSocket.onmessage = function(event) {
-    try {
-        var message = JSON.parse(event.data);
-        if (message.type === 'offer') {
-            var sdp = message.sdp;
-            console.log("Received SDP offer:", sdp);
+        // Handle form submission to prevent losing timer data on page reload
+        document.getElementById('exam-form').onsubmit = function (e) {
+            sessionStorage.removeItem('answers'); // Clear stored answers on submit
+            sessionStorage.removeItem('startTime'); // Clear start time on submit
+        };
+    };
+    
 
-            // Assume pc is your RTCPeerConnection object
-            pc.setRemoteDescription(new RTCSessionDescription(sdp))
-              .then(function() {
-                  console.log("Remote description successfully set.");
-                  // Proceed with ICE candidates or other steps
-              })
-              .catch(function(error) {
-                  console.error("Error setting remote description:", error);
-              });
-        } else if (message.type === 'candidate') {
-            var candidate = message.candidate;
-            console.log("Received ICE candidate:", candidate);
 
-            // Assume pc is your RTCPeerConnection object
-            pc.addIceCandidate(new RTCIceCandidate(candidate))
-              .then(function() {
-                  console.log("ICE candidate added successfully.");
-              })
-              .catch(function(error) {
-                  console.error("Error adding ICE candidate:", error);
-              });
-        }
-    } catch (error) {
-        console.error("Error parsing JSON:", error);
-    }
-};
+const isProctor = {{ is_proctor|yesno:"true,false" }};
+let peerConnection;
+let localStream;
 
-signalingSocket.onclose = function(e) {
-    console.error('Signaling socket closed unexpectedly');
-};
+// Function to handle errors
+function handleError(error) {
+    console.error('Error:', error);
+}
 
-async function startCall() {
-    pc = new RTCPeerConnection();
+// Function to initialize WebRTC connection
+// Function to initialize WebRTC connection
+// Function to initialize WebRTC connection
+function initializeRTC() {
+    const configuration = {
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    };
 
-    pc.onicecandidate = function(event) {
-        if (event.candidate && signalingSocket.readyState === WebSocket.OPEN) {
-            signalingSocket.send(JSON.stringify({
-                type: 'candidate',
-                candidate: event.candidate
-            }));
+    peerConnection = new RTCPeerConnection(configuration);
+
+    // Event listener for receiving ICE candidates
+    peerConnection.onicecandidate = function (event) {
+        if (event.candidate) {
+            const rtcSocket = new WebSocket(
+                'ws://' + window.location.host + '/ws/rtc/' + roomName + '/'
+            );
+            rtcSocket.onopen = function () {
+                rtcSocket.send(JSON.stringify({
+                    type: 'candidate',
+                    candidate: event.candidate
+                }));
+            };
         }
     };
 
-    if (is_Proctor) {
-        pc.ontrack = function(event) {
-            const video = document.getElementById('student-video');
-            video.srcObject = event.streams[0];
-        };
-    }
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        stream.getTracks().forEach(track => pc.addTrack(track, stream));
-
-        if (!is_Proctor) {
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            signalingSocket.send(JSON.stringify({
-                type: 'offer',
-                sdp: pc.localDescription
-            }));
+    // Event listener for receiving remote tracks
+    peerConnection.ontrack = function (event) {
+        const remoteVideoElement = document.getElementById('student-video');
+        if (remoteVideoElement && !remoteVideoElement.srcObject) {
+            remoteVideoElement.srcObject = event.streams[0];
         }
-    } catch (error) {
-        console.error('Error starting call:', error);
-    }
+    };
+
+    // WebSocket message handler for RTC messages
+    const rtcSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/rtc/' + roomName + '/'
+    );
+
+    rtcSocket.onmessage = function (event) {
+        const message = JSON.parse(event.data);
+        console.log('Received RTC message:', message); // Debug: Log received message
+
+        if (message.type === 'offer') {
+            if (message.offer) {
+                peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer))
+                    .then(() => {
+                        // Handle setRemoteDescription success if needed
+                    })
+                    .catch(handleError);
+            } else {
+                console.error('Received offer message with null or undefined offer:', message);
+            }
+        } else if (message.type === 'answer') {
+            if (message.answer) {
+                peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer))
+                    .then(() => {
+                        // Handle setRemoteDescription success if needed
+                    })
+                    .catch(handleError);
+            } else {
+                console.error('Received answer message with null or undefined answer:', message);
+            }
+        } else if (message.type === 'candidate') {
+            if (message.candidate) {
+                peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate))
+                    .then(() => {
+                        // Handle addIceCandidate success if needed
+                    })
+                    .catch(handleError);
+            } else {
+                console.error('Received candidate message with null or undefined candidate:', message);
+            }
+        } else {
+            console.error('Unknown RTC message type:', message.type);
+        }
+    };
+
+    // Request permission to access camera and microphone
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(stream => {
+            localStream = stream;
+            const videoElement = document.getElementById('student-video');
+            if (videoElement) {
+                videoElement.srcObject = stream;
+
+                // Add local stream to peer connection
+                stream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, stream);
+                });
+
+                // Send stream to proctor if student
+                if (!isProctor) {
+                    peerConnection.createOffer()
+                        .then(offer => peerConnection.setLocalDescription(offer))
+                        .then(() => {
+                            rtcSocket.send(JSON.stringify({
+                                type: 'offer',
+                                offer: peerConnection.localDescription
+                            }));
+                        })
+                        .catch(handleError);
+                }
+            } else {
+                console.error('Student video element not found.');
+            }
+        })
+        .catch(error => {
+            console.error('Error accessing media devices:', error);
+            // Handle error or display message to user
+        });
 }
 
-const isProctor = {{ is_proctor|yesno:"true,false" }};
+// Function to handle errors
+function handleError(error) {
+    console.error('Error:', error);
+}
 
+// Call initializeRTC() if not a proctor
 if (!isProctor) {
-    // Tab/Window change detection for students only
-    let blurTimeout;
-
-    window.addEventListener('blur', function() {
-        blurTimeout = setTimeout(() => {
-            sendTabChangeMessage();
-        }, 1000);
-    });
-
-    window.addEventListener('focus', function() {
-        clearTimeout(blurTimeout);
-    });
-
-    function sendTabChangeMessage() {
-        if (chatSocket.readyState === WebSocket.OPEN) {
-            chatSocket.send(JSON.stringify({
-                'message': 'Student has changed the tab or window.',
-                'sender': username
-            }));
-        }
+    // Check if the browser supports getUserMedia
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        initializeRTC();
+    } else {
+        console.error('getUserMedia is not supported in this browser');
+        // Handle unsupported browser case
     }
 }
 
-startCall();
+// Function to initialize WebRTC only if not a proctor
+if (!isProctor) {
+    // Check if the browser supports getUserMedia
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        initializeRTC();
+    } else {
+        console.error('getUserMedia is not supported in this browser');
+        // Handle unsupported browser case
+    }
+}
 
-    </script>
+
+
+</script>
 </body>
 </html>
