@@ -170,12 +170,9 @@ def marks_view(request):
     else:
         return redirect('home')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-
 def exam_list(request):
-    if request.user.is_authenticated and request.user.groups.filter(name='Company').exists():
-        exams = Exam.objects.filter(company=request.user)
-    else:
-        exams = None
+    exams = Exam.objects.all()
+    
     return render(request, 'exam_list.html', {'exams': exams})
 
 
@@ -183,48 +180,50 @@ def exam_detail(request, exam_id):
     exam = Exam.objects.get(pk=exam_id)
     return render(request, 'exam_list.html', {'exam': exam})
 
-
 def exam_create(request):
     if request.method == 'POST':
         form = ExamForm(request.POST)
-        question_formset = QuestionFormSet(request.POST, instance=form.instance)
-        if form.is_valid() and question_formset.is_valid():
+        if form.is_valid():
             exam = form.save(commit=False)
             exam.company = request.user
             exam.save()
-            question_formset.instance = exam
-            question_formset.save()
             return redirect('exam_list')
     else:
         form = ExamForm()
-        question_formset = QuestionFormSet(instance=form.instance)
-    return render(request, 'exam_create.html', {
-        'form': form,
-        'question_formset': question_formset,
-    })
+    return render(request, 'exam_create.html', {'form': form})
 
 def exam_update(request, exam_id):
-    exam = get_object_or_404(Exam, pk=exam_id)
+    try:
+        exam = get_object_or_404(Exam, pk=exam_id)
+
+    except:
+        return redirect('exam_list') 
+    if exam.company != request.user:
+        messages.error(request, "You do not have permission to update this exam.")
+        return redirect('exam_list')  
+
     if request.method == 'POST':
         form = ExamForm(request.POST, instance=exam)
-        question_formset = QuestionFormSet(request.POST, instance=exam)
-        if form.is_valid() and question_formset.is_valid():
-            form.save()
-            question_formset.save()
+        if form.is_valid():
+            exam = form.save(commit=False)
+            exam.company = request.user
+            exam.save()
             return redirect('exam_list')
     else:
         form = ExamForm(instance=exam)
-        question_formset = QuestionFormSet(instance=exam)
-    return render(request, 'exam_update.html', {
-        'form': form,
-        'question_formset': question_formset,
-    })
+    
+    return render(request, 'exam_update.html', {'form': form, 'exam': exam})
 
 def exam_delete(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id)
+    
+    if exam.company != request.user:
+        messages.error(request, "You do not have permission to delete this exam.")
+        return redirect('exam_list')  
     if request.method == 'POST':
         exam.delete()
         return redirect('exam_list')
+
     return render(request, 'exam_list.html', {'exam': exam})
 
 
@@ -261,8 +260,11 @@ def question_create(request, exam_id):
 
 
 def question_update(request, exam_id, question_id):
-    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
-    question = get_object_or_404(Question, pk=question_id, exam=exam)
+    try:
+        exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
+        question = get_object_or_404(Question, pk=question_id, exam=exam)
+    except:
+        return redirect(reverse('questions_list', kwargs={'exam_id': exam_id}))
     if request.method == 'POST':
         form = QuestionForm(request.POST, instance=question)
         if form.is_valid():
@@ -309,9 +311,12 @@ def answer_create(request, exam_id, question_id):
 
 
 def answer_update(request, exam_id, question_id, answer_id):
-    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
-    question = get_object_or_404(Question, pk=question_id, exam=exam)
-    answer = get_object_or_404(Answer, pk=answer_id, question=question)
+    try:
+        exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
+        question = get_object_or_404(Question, pk=question_id, exam=exam)
+        answer = get_object_or_404(Answer, pk=answer_id, question=question)
+    except:
+        return redirect(reverse('answers_list', kwargs={'exam_id': exam_id, 'question_id': question_id}))
     if request.method == 'POST':
         form = AnswerForm(request.POST, instance=answer)
         if form.is_valid():
@@ -330,79 +335,3 @@ def answer_delete(request, exam_id, question_id, answer_id):
         answer.delete()
         return redirect('answer_list', exam_id=exam_id, question_id=question_id)
     return render(request, 'answer_list.html', {'answer': answer, 'question': question, 'exam_id': exam_id})
-
-# views.py
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.forms import modelformset_factory, inlineformset_factory, BaseInlineFormSet
-from .models import Exam, Question, Answer
-from .forms import ExamForm, QuestionForm, AnswerForm
-from .forms import ExamForm, QuestionFormSet 
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Exam, Question, Answer
-from .forms import ExamForm, QuestionFormSet
-
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Exam, Question, Answer
-from .forms import ExamForm, QuestionFormSet
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Exam, Question, Answer
-from .forms import ExamForm, QuestionFormSet
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Exam, Question, Answer
-from .forms import ExamForm, QuestionFormSet
-
-def exam_manage(request, exam_id=None):
-    # Retrieve existing exam instance if editing
-    if exam_id:
-        exam = get_object_or_404(Exam, pk=exam_id)
-        exam_form = ExamForm(request.POST or None, request.FILES or None, instance=exam)
-        question_formset = QuestionFormSet(request.POST or None, instance=exam)
-    else:
-        exam = None
-        exam_form = ExamForm(request.POST or None, request.FILES or None)
-        question_formset = QuestionFormSet(request.POST or None)
-
-    if request.method == 'POST':
-        if exam_form.is_valid() and question_formset.is_valid():
-            exam = exam_form.save(commit=False)
-            exam.company = request.user  # Set the company to the current user
-            exam.save()
-
-            for question_form in question_formset:
-                if question_form.is_valid():
-                    question = question_form.save(commit=False)
-                    question.exam = exam
-                    question.save()
-
-                    # Handle answers for this question
-                    # Assuming your formset doesn't directly provide 'answers'
-                    # You may need to adjust this based on your actual form structure
-                    answer_texts = question_form.cleaned_data.get('answers')  # Example assuming answers are handled this way
-
-                    if answer_texts:
-                        for text in answer_texts:
-                            if text.strip():  # Example handling of each answer text
-                                answer = Answer(question=question, text=text)
-                                answer.save()
-
-            return redirect('exam_list')
-
-    return render(request, 'exam_manage.html', {
-        'exam_form': exam_form,
-        'question_formset': question_formset,
-        'exam': exam,
-    })
-
-
-
-def delete_exam(request, exam_id):
-    exam = Exam.objects.get(pk=exam_id)
-    if request.method == 'POST':
-        exam.delete()
-        return redirect('exam_list')  
-
-    return render(request, 'delete_exam.html', {'exam': exam})

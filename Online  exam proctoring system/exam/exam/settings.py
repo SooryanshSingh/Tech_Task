@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+USE_TZ = True
 
 # Application definition
 LOGIN_REDIRECT_URL = '/'
@@ -87,15 +88,10 @@ CHANNEL_LAYERS = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'base1',
-        'USER': 'Sooryansh',
-        'PASSWORD': 'Pokemon is good',
-        'HOST': 'localhost',  
-        'PORT': '5432',      
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',  
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

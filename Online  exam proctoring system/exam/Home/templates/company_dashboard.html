@@ -12,9 +12,7 @@
         </ul>
     </div>
     <div class="main-content">
-        <header>
-            <h1>Welcome, {{ user.username }}</h1>
-        </header>
+       
         <section class="widgets">
             <div class="widget">
                 <h3>Total Exams</h3>
@@ -26,6 +24,7 @@
             </div>
         </section>
         <section class="form-section">
+            <p>To assign a proctors for the exam you created, simply enter the emails. The proctor should register using that email.</p>
             {% if success %}
             <div class="alert alert-success">Proctor email added successfully!</div>
             {% endif %}

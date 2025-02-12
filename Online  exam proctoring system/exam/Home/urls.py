@@ -3,6 +3,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('', views.home, name='home'),
+      path('', include('realtime.urls')), 
     path('about/', views.about, name='about'),
     path('login/', views.login_user, name='button1'),
     path('logout/', views.logout_user, name='button2'),
@@ -10,10 +11,20 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('marks/', views.marks_view, name='marks'),
     path('', include('django.contrib.auth.urls')),
-    path('exam_manage/', views.exam_manage, name='exam_manage'),
-    path('exam_manage/<int:exam_id>/', views.exam_manage, name='exam_manage'),
-    path('exam_list/', views.exam_list, name='exam_list'),
-     path('delete_exam/<int:exam_id>/', views.delete_exam, name='delete_exam'),  # Example delete exam URL
+    path('exams/', views.exam_list, name='exam_list'),
+    path('exams/<int:exam_id>/', views.exam_detail, name='exam_detail'),  
+    path('exams/create/', views.exam_create, name='exam_create'), 
+    path('exams/<int:exam_id>/update/', views.exam_update, name='exam_update'),  
+    path('exams/<int:exam_id>/delete/', views.exam_delete, name='exam_delete'), 
+    path('exams/questions/<int:exam_id>/', views.question_list, name='question_list'),
+    path('exams/questions/<int:exam_id>/create/', views.question_create, name='question_create'), 
+    path('exams/questions/<int:exam_id>/update/<int:question_id>/', views.question_update, name='question_update'),  
+    path('exams/questions/<int:exam_id>/delete/<int:question_id>/', views.question_delete, name='question_delete'), 
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/', views.answer_list, name='answer_list'),
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/<int:answer_id>/', views.answer_detail, name='answer_detail'),
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/create', views.answer_create, name='answer_create'),
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/<int:answer_id>/update/', views.answer_update, name='answer_update'),
+    path('exams/questions/<int:exam_id>/<int:question_id>/answers/<int:answer_id>/delete/', views.answer_delete, name='answer_delete'),
     path('company_dashboard/', views.company_dashboard, name='company_dashboard'),
     path('proctor_dashboard/', views.proctor_dashboard, name='proctor_dashboard'),
 

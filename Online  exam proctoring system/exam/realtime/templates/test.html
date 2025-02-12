@@ -7,32 +7,12 @@
     <meta charset="UTF-8">
     <title>{{ exam.title }}</title>
     <link rel="stylesheet" type="text/css" href="{% static 'test.css' %}">
-    <style>
-        .chat-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #f9f9f9;
-            border: 1px solid #ccc;
-            padding: 10px;
-            display: none;
-            z-index: 1000;
-            max-width: 300px;
-        }
-
-        .chat-container.active {
-            display: block;
-        }
-
-        .chat-log {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-    </style>
+   
 </head>
 <body>
 <h1>{{ exam.title }}</h1>
 <p>{{ exam.description }}</p>
+<input type="hidden" id="exam-id" value="{{ exam.id }}">
 
 <div class="timer-container">
     <strong>Time Remaining:</strong>
@@ -74,7 +54,7 @@
                 <button type="button" id="next-button">Next</button>
                 <button type="button" id="clear-button">Clear Response</button>
             </div>
-            <input type="submit" value="Submit Answers" class="submit-button" disabled>
+            <input type="submit" value="Submit Answers" class="submit-button" >
         </div>
         <button type="button" class="chat-toggle-button" id="chat-toggle-button">Chat with Proctor</button>
         <div class="chat-container" id="chat-container">
@@ -92,382 +72,109 @@
         <button type="button" id="close-exam-button" class="centered-button">Close Exam</button>
     </div>
 {% endif %}
+<div id="video-container" style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">
+    <div id="student-video" style="width: 320px; height: 240px; background: black;"></div>
+</div>
 
-    <div class="main-grid-container">
-        <div class="video-container">
-            <div><video id="student-video" autoplay playsinline></video></div>
-        </div>
-    </div>
 
 <script>
-
     const roomName = "{{ room_name }}";
     const username = "{{ user.username }}";
-    const chatSocket = new WebSocket(
-        'ws://' + window.location.hostname + ':8000/ws/chat/' + roomName + '/'
-    );
+    const examId = "{{ exam.id }}";
+</script>
+<script src="{% static 'test.js' %}"></script>
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 
-       chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            const chatLog = document.querySelector('#chat-log');
-            const sender = data.sender || 'Unknown';
-
-            if (sender !== username) {
-                chatLog.innerHTML += '<div class="received-message"><strong>(' + sender + '): </strong>' + data.message + '</div>';
-                chatLog.scrollTop = chatLog.scrollHeight;
-            }
-        };
-
-    chatSocket.onclose = function (e) {
-        console.error('Chat socket closed unexpectedly');
-    };
-
-    chatSocket.onclose = function (e) {
-        console.error('Chat socket closed unexpectedly');
-    };
-
-    document.querySelector('#chat-message-input').focus();
-    document.querySelector('#chat-message-input').onkeyup = function (e) {
-        if (e.keyCode === 13) {
-            document.querySelector('#chat-message-submit').click();
-        }
-    };
-
-    document.querySelector('#chat-message-submit').onclick = function (e) {
-        e.preventDefault();
-        const messageInputDom = document.querySelector('#chat-message-input');
-        const message = messageInputDom.value;
-        if (message.trim()) {
-            const chatLog = document.querySelector('#chat-log');
-            chatLog.innerHTML += '<div class="sent-message"><strong>(' + username + '): </strong>' + message + '</div>';
-            chatLog.scrollTop = chatLog.scrollHeight;
-            if (chatSocket.readyState === WebSocket.OPEN) {
-                chatSocket.send(JSON.stringify({
-                    'message': message,
-                    'sender': username
-                }));
-            } else {
-                console.error('WebSocket is not open. Message not sent.');
-            }
-            messageInputDom.value = '';
-        }
-    };
-
-    const chatToggleButton = document.getElementById('chat-toggle-button');
-    const chatCloseButton = document.getElementById('chat-close-button');
-    const chatContainer = document.getElementById('chat-container');
-
-    chatToggleButton.onclick = function (e) {
-        chatContainer.classList.add('active');
-        chatToggleButton.style.display = 'none';
-    };
-
-    chatCloseButton.onclick = function (e) {
-        chatContainer.classList.remove('active');
-        chatToggleButton.style.display = 'block';
-    };
-
-    const questionLinks = document.querySelectorAll('.question-link');
-    const questionItems = document.querySelectorAll('.question-item');
-    let currentQuestionIndex = 0;
-
-    questionLinks.forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            const questionId = this.dataset.questionId;
-            showQuestion(questionId);
-        });
-    });
-
-    document.getElementById('prev-button').addEventListener('click', function () {
-        if (currentQuestionIndex > 0) {
-            currentQuestionIndex--;
-            showQuestionByIndex(currentQuestionIndex);
-        }
-    });
-
-    document.getElementById('next-button').addEventListener('click', function () {
-        if (currentQuestionIndex < questionItems.length - 1) {
-            currentQuestionIndex++;
-            showQuestionByIndex(currentQuestionIndex);
-        }
-    });
-
-    document.getElementById('clear-button').addEventListener('click', function () {
-        const currentQuestion = questionItems[currentQuestionIndex];
-        const radioInputs = currentQuestion.querySelectorAll('input[type="radio"]');
-        radioInputs.forEach(input => {
-            input.checked = false;
-        });
-        checkAllAnswered();
-        storeAnswers(); // Clear stored answers
-    });
-
-    function showQuestion(questionId) {
-        questionItems.forEach(item => {
-            item.classList.remove('active');
-            if (item.id === questionId) {
-                item.classList.add('active');
-                currentQuestionIndex = Array.from(questionItems).indexOf(item);
-            }
-        });
-        updateNavigationButtons();
-    }
-
-    function showQuestionByIndex(index) {
-        questionItems.forEach(item => {
-            item.classList.remove('active');
-        });
-        questionItems[index].classList.add('active');
-        updateNavigationButtons();
-    }
-
-    function updateNavigationButtons() {
-        const prevButton = document.getElementById('prev-button');
-        const nextButton = document.getElementById('next-button');
-
-        prevButton.disabled = currentQuestionIndex === 0;
-        nextButton.disabled = currentQuestionIndex === questionItems.length - 1;
-    }
-
-    const submitButton = document.querySelector('.submit-button');
-    const radioInputs = document.querySelectorAll('input[type="radio"]');
-
-    function checkAllAnswered() {
-        const answeredQuestions = new Set();
-        radioInputs.forEach(input => {
-            if (input.checked) {
-                answeredQuestions.add(input.name);
-            }
-        });
-        if (answeredQuestions.size === questionItems.length) {
-            submitButton.disabled = false;
-        } else {
-            submitButton.disabled = true;
-        }
-    }
-
-    radioInputs.forEach(input => {
-        input.addEventListener('change', function () {
-            storeAnswers(); // Store answers on change
-            checkAllAnswered();
-        });
-    });
-    function storeAnswers() {
-            const answers = {};
-            radioInputs.forEach(input => {
-                if (input.checked) {
-                    answers[input.name] = input.value;
-                }
-            });
-            sessionStorage.setItem('examAnswers', JSON.stringify(answers));
-        }
-
-        function restoreAnswers() {
-            const storedAnswers = sessionStorage.getItem('examAnswers');
-            if (storedAnswers) {
-                const answers = JSON.parse(storedAnswers);
-                Object.keys(answers).forEach(name => {
-                    const input = document.querySelector(`input[name="${name}"][value="${answers[name]}"]`);
-                    if (input) {
-                        input.checked = true;
-                    }
-                });
-            }
-            checkAllAnswered(); 
-        }
-
-        
-
-
-    window.onload = function () {
-        restoreAnswers();     
-
-        // Initialize timer
-        const timerElement = document.getElementById('timer');
-        const startTime = sessionStorage.getItem('startTime');
-        let initialTime = 60 * {{ exam.duration }}; // Initial duration in seconds
-        if (startTime) {
-            initialTime = Math.max(0, initialTime - (Date.now() - parseInt(startTime)) / 1000);
-        } else {
-            sessionStorage.setItem('startTime', Date.now());
-        }
-
-        function updateTimer() {
-    const minutes = Math.floor(initialTime / 60);
-    let seconds = initialTime % 60;
-    seconds = seconds.toFixed(0); // Round seconds to nearest integer
-    seconds = seconds < 10 ? '0' + seconds : seconds;
-    timerElement.textContent = `${minutes}:${seconds}`;
-    if (initialTime <= 0) {
-        clearInterval(timerInterval);
-        submitButton.click(); // Automatically submit when time runs out
-    }
-    initialTime--;
-}
-
-        updateTimer();
-        const timerInterval = setInterval(updateTimer, 1000);
-
-        // Handle form submission to prevent losing timer data on page reload
-        document.getElementById('exam-form').onsubmit = function (e) {
-            sessionStorage.removeItem('answers'); // Clear stored answers on submit
-            sessionStorage.removeItem('startTime'); // Clear start time on submit
-        };
-    };
+<script>
     
 
+if (isProctor){
+console.log("isProctor:", isProctor);
 
-const isProctor = {{ is_proctor|yesno:"true,false" }};
-let peerConnection;
-let localStream;
+const examSocket = new WebSocket(
+'ws://' + window.location.hostname + ':8000/ws/exam/' + examId + '/'
+);
 
-// Function to handle errors
-function handleError(error) {
-    console.error('Error:', error);
+examSocket.onmessage = function (e) {
+const data = JSON.parse(e.data);
+
+if (data.type === "exam_closed") {
+    window.location.href = `/test_end/${examId}/`; 
 }
+};
+}
+examSocket.onclose = function (e) {
+console.error("Exam WebSocket closed unexpectedly.");
+};
+document.getElementById("close-exam-button").addEventListener("click", function () {
+    console.log("Button Clicked! Sending WebSocket message...");
 
-// Function to initialize WebRTC connection
-// Function to initialize WebRTC connection
-// Function to initialize WebRTC connection
-function initializeRTC() {
-    const configuration = {
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    };
-
-    peerConnection = new RTCPeerConnection(configuration);
-
-    // Event listener for receiving ICE candidates
-    peerConnection.onicecandidate = function (event) {
-        if (event.candidate) {
-            const rtcSocket = new WebSocket(
-                'ws://' + window.location.host + '/ws/rtc/' + roomName + '/'
-            );
-            rtcSocket.onopen = function () {
-                rtcSocket.send(JSON.stringify({
-                    type: 'candidate',
-                    candidate: event.candidate
-                }));
-            };
-        }
-    };
-
-    // Event listener for receiving remote tracks
-    peerConnection.ontrack = function (event) {
-        const remoteVideoElement = document.getElementById('student-video');
-        if (remoteVideoElement && !remoteVideoElement.srcObject) {
-            remoteVideoElement.srcObject = event.streams[0];
-        }
-    };
-
-    // WebSocket message handler for RTC messages
-    const rtcSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/rtc/' + roomName + '/'
-    );
-
-    rtcSocket.onmessage = function (event) {
-        const message = JSON.parse(event.data);
-        console.log('Received RTC message:', message); // Debug: Log received message
-
-        if (message.type === 'offer') {
-            if (message.offer) {
-                peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer))
-                    .then(() => {
-                        // Handle setRemoteDescription success if needed
-                    })
-                    .catch(handleError);
-            } else {
-                console.error('Received offer message with null or undefined offer:', message);
-            }
-        } else if (message.type === 'answer') {
-            if (message.answer) {
-                peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer))
-                    .then(() => {
-                        // Handle setRemoteDescription success if needed
-                    })
-                    .catch(handleError);
-            } else {
-                console.error('Received answer message with null or undefined answer:', message);
-            }
-        } else if (message.type === 'candidate') {
-            if (message.candidate) {
-                peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate))
-                    .then(() => {
-                        // Handle addIceCandidate success if needed
-                    })
-                    .catch(handleError);
-            } else {
-                console.error('Received candidate message with null or undefined candidate:', message);
-            }
-        } else {
-            console.error('Unknown RTC message type:', message.type);
-        }
-    };
-
-    // Request permission to access camera and microphone
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        .then(stream => {
-            localStream = stream;
-            const videoElement = document.getElementById('student-video');
-            if (videoElement) {
-                videoElement.srcObject = stream;
-
-                // Add local stream to peer connection
-                stream.getTracks().forEach(track => {
-                    peerConnection.addTrack(track, stream);
-                });
-
-                // Send stream to proctor if student
-                if (!isProctor) {
-                    peerConnection.createOffer()
-                        .then(offer => peerConnection.setLocalDescription(offer))
-                        .then(() => {
-                            rtcSocket.send(JSON.stringify({
-                                type: 'offer',
-                                offer: peerConnection.localDescription
-                            }));
-                        })
-                        .catch(handleError);
-                }
-            } else {
-                console.error('Student video element not found.');
-            }
-        })
-        .catch(error => {
-            console.error('Error accessing media devices:', error);
-            // Handle error or display message to user
+    if (examSocket.readyState === WebSocket.OPEN) {
+        let message = JSON.stringify({
+            type: "close_exam",
+            exam_id: examId
         });
-}
 
-// Function to handle errors
-function handleError(error) {
-    console.error('Error:', error);
-}
-
-// Call initializeRTC() if not a proctor
-if (!isProctor) {
-    // Check if the browser supports getUserMedia
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        initializeRTC();
+        console.log("Message being sent:", message);
+        examSocket.send(message);
+        console.log("Close exam message sent successfully!");
     } else {
-        console.error('getUserMedia is not supported in this browser');
-        // Handle unsupported browser case
+        console.error("WebSocket is not open. ReadyState:", examSocket.readyState);
+    }
+});
+
+
+const APP_ID = "ba895e4e800d4249837ad0a2ff5f06cc"; 
+const CHANNEL_NAME = "Video"; 
+let TOKEN = ""; 
+const UID = Math.floor(Math.random() * 10000); 
+
+async function fetchToken() {
+    try {
+        const response = await fetch(`/get-agora-token/?channelName=${CHANNEL_NAME}&uid=${UID}`);
+        const data = await response.json();
+        TOKEN = data.token;
+        console.log("New Token:", TOKEN);
+
+        startAgora();
+    } catch (error) {
+        console.error("Error fetching token:", error);
     }
 }
 
-// Function to initialize WebRTC only if not a proctor
-if (!isProctor) {
-    // Check if the browser supports getUserMedia
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        initializeRTC();
-    } else {
-        console.error('getUserMedia is not supported in this browser');
-        // Handle unsupported browser case
+let client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+async function startAgora() {
+    try {
+        console.log("Agora Token:", TOKEN);
+
+        const uid = await client.join(APP_ID, CHANNEL_NAME, TOKEN, UID);
+        console.log("User " + uid + " joined channel.");
+
+        if (!isProctor) {
+            const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+            
+            const localTracks = [microphoneTrack, cameraTrack];
+            await client.publish(localTracks);
+            console.log("Publishing student stream.");
+
+            cameraTrack.play("student-video");
+        } else {
+            client.on("user-published", async (user, mediaType) => {
+                await client.subscribe(user, mediaType);
+                if (mediaType === "video") {
+                    user.videoTrack.play("student-video");
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Agora error:", error);
     }
 }
 
-
-
+fetchToken(); 
+ 
 </script>
+
 </body>
 </html>

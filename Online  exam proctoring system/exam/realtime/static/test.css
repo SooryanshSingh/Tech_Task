@@ -205,23 +205,8 @@ h1, h2 {
     max-width: 1200px;
 }
 
-.video-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: black;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 80%; /* Adjusted width of video container */
-    margin: 0 auto; /* Center horizontally */
-    margin-bottom: 20px; /* Added space below the video */
-}
 
-video {
-    width: 100%; /* Ensure video fills the container */
-    border-radius: 8px;
-}
+
 
 .centered-button {
     display: block;
@@ -240,3 +225,23 @@ video {
 .centered-button:hover {
     background-color: #0056b3;
 }
+        .chat-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .chat-container.active {
+            display: block;
+        }
+
+        .chat-log {
+            max-height: 200px;
+            overflow-y: auto;
+        }

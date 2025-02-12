@@ -1,11 +1,31 @@
+:root {
+  --primary-color: #3a86ff;
+  --secondary-color: #ff006e;
+  --background-color: #f8f9fa;
+  --text-color: #333;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-    background-image: url("./bgbg.jpeg");
-    background-size: cover; 
-    background-position: center; 
-    background-repeat: no-repeat; 
-    height: 100vh; 
-    margin: 0; 
-    padding: 0; }
+  font-family: "Inter", sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background: linear-gradient(135deg, #8bc6ec 0%, #9599e2 100%);
+  min-height: 100vh;
+}
+
 
 h1{
     font-family: 'Brush Script MT', cursive;
@@ -28,7 +48,6 @@ font-size: 25px;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-image: url("./bg.avif");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;

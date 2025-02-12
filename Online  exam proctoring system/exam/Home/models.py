@@ -3,14 +3,15 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 class Exam(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     company = models.ForeignKey(User, on_delete=models.CASCADE, related_name='exams')
     examinees = models.ManyToManyField(User, related_name='assigned_exams', blank=True)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    start_time = models.DateTimeField(null=False, blank=False)
+    end_time = models.DateTimeField(null=False, blank=False)
     duration = models.PositiveIntegerField(help_text="Duration in minutes")
     attempted = models.BooleanField(default=False)  
 
@@ -51,3 +52,24 @@ class ProctorEmail(models.Model):
 
     def __str__(self):
         return self.email
+
+
+
+
+class Timer(models.Model):
+    exam = models.OneToOneField(Exam, on_delete=models.CASCADE, related_name="timer")
+    start_time = models.DateTimeField(null=True, blank=True)
+
+    def start_timer(self):
+        """Starts the timer when the first user begins the exam."""
+        if not self.start_time:
+            self.start_time = now()
+            self.save()
+
+    def get_remaining_time(self):
+        """Returns remaining time in seconds. If not started, return full duration."""
+        if not self.start_time:
+            return self.exam.duration * 60  # Full duration in seconds
+
+        elapsed_time = (now() - self.start_time).total_seconds()
+        return max(0, self.exam.duration * 60 - elapsed_time)
