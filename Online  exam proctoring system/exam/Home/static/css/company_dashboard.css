@@ -1,3 +1,13 @@
+/* === Base & Fonts === */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(to right, #6a11cb, #aa076b);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+  
 .dashboard-container {
     display: flex;
 }

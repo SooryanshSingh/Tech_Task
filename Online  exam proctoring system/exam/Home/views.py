@@ -1,18 +1,14 @@
 from django.contrib.auth.models import Group, User
 from django.views.decorators.cache import cache_control
 from .models import Exam,Exam, Question, Answer
-from django import forms
 from django.http import JsonResponse
 import json
-
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .forms import CustomUserCreationForm
-from django.http import HttpResponseRedirect
-from django.urls import reverse
 from .forms import QuestionWithAnswersForm
-from .forms import ExamForm, QuestionForm, AnswerForm
+from .forms import ExamForm
 from .forms import ProctorEmailForm 
 from .models import ProctorEmail
 from django.utils import timezone  
@@ -20,9 +16,10 @@ from django.utils import timezone
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
     is_company = request.user.groups.filter(name='Company').exists()
-    is_proctor = request.user.groups.filter(name='Company').exists()
+    is_proctor = request.user.groups.filter(name='Proctor').exists()
+    is_student = request.user.groups.filter(name='Student').exists()
 
-    return render(request, 'home.html', {'is_company': is_company,'is_proctor':is_proctor})
+    return render(request, 'home.html', {'is_company': is_company,'is_proctor':is_proctor,'is_student':is_student})
 
 def about(request):
     return render(request, 'about.html')

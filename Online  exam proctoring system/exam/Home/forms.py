@@ -70,7 +70,7 @@ class ExamForm(forms.ModelForm):
     email_list = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 3}),
         required=False,
-        help_text="Enter comma-separated email addresses to assign examinees."
+        help_text="Use comma"
     )
 
     class Meta:

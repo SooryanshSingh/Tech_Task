@@ -1,16 +1,4 @@
-body {
-    background: linear-gradient(to right bottom, #a1c4fd, #c2e9fb);
-    background-size: cover;      
-    background-position: center; 
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    font-family: 'Arial', sans-serif;
-  }
+
 h1, h2, h3 {
     color: #333;
     text-align: center;

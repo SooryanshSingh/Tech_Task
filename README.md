@@ -1,6 +1,12 @@
-# Tech_Task
-repo for tech tasks given in summer vcation
-Features-
-Exam management System for Test maker (Company)
-Proctored exams with tab change detections, chat system and Student video.
-Prlctors can close the exam when they want
+A robust and scalable Django-based **Online Proctoring System** built for secure, real-time exam monitoring.
+
+##  Features
+
+- One-way student-to-proctor stream using WebRTC.
+- Detects if the student switches tabs or minimizes the window.
+-  Proctor can close a student's exam in real-time.
+- CRUD tools for exam creation.
+- Different roles for Company, Proctors and Student.
+
+
+

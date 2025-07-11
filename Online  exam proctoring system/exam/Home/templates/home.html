@@ -1,33 +1,38 @@
-
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Modern Test Portal{% endblock %}</title>
-    <link rel="stylesheet" href="{%static 'css/home.css'%}">
+  
+    {% block css %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    {% block css %}{% endblock %}
+
+
+    {% endblock %}
 </head>
 <body>
   {% block content %}
-    <header class="glass-effect">
-        <nav>
-            <div class="logo">TestPro</div>
-            <div class="nav-links">
+    <header class="header">
+        <nav class="nav">
+            <div class="brand">TestPro</div>
+            <div class="links">
                 {% if not user.is_authenticated %}
-                    <a href="{% url 'button1' %}" class="btn btn-primary">Login</a>
-                    <a href="{% url 'signup' %}" class="btn btn-secondary">Register</a>
+                    <a href="{% url 'button1' %}" class="btn primary">Login</a>
+                    <a href="{% url 'signup' %}" class="btn secondary">Register</a>
                 {% endif %}
-                
+
                 {% if user.is_authenticated %}
-                    <a href="{% url 'button2' %}" class="btn btn-primary">Logout</a>
+                    <a href="{% url 'button2' %}" class="btn primary">Logout</a>
                 {% endif %}
-                
+
                 {% if is_company and not is_proctor %}
-                    <a href="{% url 'exam_list' %}" class="btn btn-secondary">View Exams</a>
+                    <a href="{% url 'company_dashboard' %}" class="btn secondary">Dashboard</a>
+                {% endif %}
+                {% if not is_company and not is_proctor%}
+                <a href="{% url 'dashboard' %}" class="btn secondary">Dashboard</a>
                 {% endif %}
             </div>
         </nav>
@@ -37,51 +42,49 @@
         <section class="hero">
             <h1>Revolutionize Your Testing Experience</h1>
             <p>Secure, efficient, and tailored for every user's needs</p>
-            <a href="#features" class="btn btn-cta">Explore Features</a>
+            <a href="#features" class="btn cta">Explore Features</a>
         </section>
 
         <section id="features" class="features">
-            <div class="feature-card">
+            <div class="card">
                 <div class="icon">🔒</div>
                 <h2>Secure Proctoring</h2>
                 <p>Ensure exam integrity with our advanced proctoring system</p>
             </div>
-            <div class="feature-card">
+            <div class="card">
                 <div class="icon">⏱️</div>
                 <h2>Timed Tests</h2>
                 <p>Set precise time limits for accurate assessment</p>
             </div>
-            <div class="feature-card">
+            <div class="card">
                 <div class="icon">🎨</div>
                 <h2>Custom Exams</h2>
                 <p>Create personalized tests tailored to your requirements</p>
             </div>
-            <div class="feature-card">
+            <div class="card">
                 <div class="icon">💬</div>
                 <h2>Real-Time Chat</h2>
                 <p>Instant communication between proctors and test-takers</p>
             </div>
         </section>
 
-        <section class="user-types">
-            <div class="user-card glass-effect">
+        <section class="roles">
+            <div class="role">
                 <h3>For Students</h3>
-                <p class="p">Experience fair and secure testing in a cutting-edge environment</p>
-                <p class="p"> Login and select the test you are assigned</p>
+                <p>Experience fair and secure testing in a cutting-edge environment</p>
+                <p>Login and select the test you are assigned</p>
             </div>
-            <div class="user-card glass-effect">
+            <div class="role">
                 <h3>For Test Makers</h3>
-                <p class="p">Craft, manage, and analyze exams with powerful tools</p>
-                <p class="p">Appoint a proctor for your exam for secure examinations </p>
+                <p>Craft, manage, and analyze exams with powerful tools</p>
+                <p>Appoint a proctor for your exam for secure examinations</p>
             </div>
         </section>
     </main>
 
-    <footer class="glass-effect">
+    <footer class="footer">
         <p>&copy; 2024 TestPro. Elevating online examinations.</p>
     </footer>
-
   {% endblock %}
 </body>
 </html>
-
