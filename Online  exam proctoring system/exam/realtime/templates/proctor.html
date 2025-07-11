@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Proctor</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/proctor.css' %}">
+</head>
+<body>
+
+    <h1>Proctor is Watching</h1>
+
+    <div id="remote-video">
+        <p id="waiting-message">Waiting for student...</p>
+    </div>
+
+    <div class="close">
+        <button type="button" id="close-exam-button" class="centered-button">Close Exam</button>
+    </div>
+
+    <input type="hidden" id="exam-id" value="{{ exam_id }}">
+
+    <!-- Scripts -->
+    <script src="{% static 'js/Proctor/Close_exam.js' %}"></script>
+    <script src="{% static 'js/Proctor/Tab.js' %}"></script>
+    <script src="{% static 'js/Proctor/Video.js' %}"></script>
+
+</body>
+</html>

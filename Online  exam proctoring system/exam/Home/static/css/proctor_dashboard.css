@@ -1,0 +1,90 @@
+/* proctor_dashboard.css */
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+.container:hover {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    color: #2c3e50;
+    font-size: 2.8rem;
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: bold;
+}
+
+h2 {
+    color: #34495e;
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: normal;
+}
+
+.exam-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.exam-item {
+    margin-bottom: 25px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.exam-item:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.exam-title {
+    color: #3498db;
+    font-size: 1.8rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.exam-title:hover {
+    color: #2980b9;
+    text-decoration: underline;
+}
+
+.exam-description {
+    color: #7f8c8d;
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+
+.exam-details {
+    margin-top: 15px;
+    font-size: 1rem;
+}
+
+.exam-details p {
+    margin: 5px 0;
+    color: #95a5a6;
+}
+
+strong {
+    color: #2c3e50;
+}
