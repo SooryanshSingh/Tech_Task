@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title  %} Login {% endblock %}
-{% block css %}<link rel="stylesheet" href="{%static './login.css'%}" />{% endblock %}
+{% block css %}<link rel="stylesheet" href="{%static './css/login.css'%}" />{% endblock %}
 {% block content %}<p>Kindly login with your creditionals to access the interface</p>
 {% for message in messages %}
     {% if message.message == "Invalid information. Please try again" %}

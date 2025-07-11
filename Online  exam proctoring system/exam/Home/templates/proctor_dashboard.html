@@ -3,7 +3,7 @@
 {% block title %}Proctor Dashboard{% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'proctor_dashboard.css' %}" />
+<link rel="stylesheet" href="{% static 'css/proctor_dashboard.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -14,7 +14,7 @@
     <ul class="exam-list">
         {% for exam in exams %}
             <li class="exam-item">
-                <a href="{% url 'test_with_chat' exam_id=exam.id %}" class="exam-title">{{ exam.title }}</a>
+                <a href="{% url 'proctor' exam_id=exam.id %}" class="exam-title">YO</a>
                 <p class="exam-description">{{ exam.description }}</p>
                 <div class="exam-details">
                     <p><strong>Start Time:</strong> {{ exam.start_time }}</p>

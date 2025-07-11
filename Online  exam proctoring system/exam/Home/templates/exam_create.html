@@ -1,15 +1,27 @@
-
 {% extends "home.html" %}
 {% load static %}
-{% block title  %}Add exams{% endblock  %}
+{% block title %}Add Exams{% endblock %}
+{% block header %}Create Multiple Exams{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/exam_create.css' %}" />
 
-{% block header  %}Create an exam{% endblock  %}
-{% block css %}<link rel="stylesheet" href="{%static './exam_create.css'%}" /> {% endblock %}
+
+{% endblock %}
 
 {% block content %}
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Add</button>
-  </form>
+  <div id="exam-forms-container">
+    <div class="exam-form">
+      <form class="single-exam-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+      </form>
+      <hr />
+    </div>
+  </div>
+
+  <button type="button" onclick="addExamForm()">➕ Add Another Exam</button>
+  <button type="button" onclick="submitExams()">✅ Submit All Exams</button>
+  <script src="{% static 'js/exam_create.js' %}"></script>
+
+
 {% endblock %}

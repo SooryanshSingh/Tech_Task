@@ -1,17 +1,38 @@
+
 {% extends "home.html" %}
-
-{% load static %}
 {% block title %}Update Question{% endblock %}
+{% load static %}
 {% block header %}Update Question{% endblock %}
+{% block css %}<link rel="stylesheet" href="{%static './css/question_update.css'%}" /> {% endblock %}
 {% block content %}
-{% block css %}<link rel="stylesheet" href="{%static './question_update.css'%}" /> {% endblock %}
+<h2>Update Question</h2>
 
-  <form method="post">
+<form method="post">
     {% csrf_token %}
-    <label for="text">Question Text:</label><br>
-    <textarea id="text" name="text" rows="4" cols="50">{{ question.text }}</textarea><br>
     
-    <input type="hidden" name="exam_id" value="{{ exam.id }}">
+    <p>{{ form.text.label_tag }}<br>{{ form.text }}</p>
+    <p>{{ form.option_a.label_tag }}<br>{{ form.option_a }}</p>
+    <p>{{ form.option_b.label_tag }}<br>{{ form.option_b }}</p>
+    <p>{{ form.option_c.label_tag }}<br>{{ form.option_c }}</p>
+    <p>{{ form.option_d.label_tag }}<br>{{ form.option_d }}</p>
+
+    <p>{{ form.correct_option.label_tag }}<br>{{ form.correct_option }}</p>
+
     <button type="submit">Save</button>
-  </form>
+</form>
+
+{% if errors %}
+  <div class="errors">
+    <h4>Form Errors:</h4>
+    <ul>
+    {% for field, errs in errors.items %}
+      <li><strong>{{ field }}:</strong>
+        {% for e in errs %}
+          {{ e.message }}
+        {% endfor %}
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+{% endif %}
 {% endblock %}

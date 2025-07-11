@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ exam.title }}</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'test.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/test.css' %}">
    
 </head>
 <body>
@@ -18,6 +18,7 @@
     <strong>Time Remaining:</strong>
     <span id="timer"></span>
 </div>
+<input type="hidden" id="student-username" value="{{ request.user.username }}">
 
 <form id="exam-form" method="post" action="{% url 'test_with_chat' exam.id %}">
     {% csrf_token %}
@@ -67,114 +68,16 @@
     </div>
 </form>
 
-{% if is_proctor %}
-    <div class="close">
-        <button type="button" id="close-exam-button" class="centered-button">Close Exam</button>
-    </div>
-{% endif %}
-<div id="video-container" style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">
-    <div id="student-video" style="width: 320px; height: 240px; background: black;"></div>
-</div>
 
 
-<script>
-    const roomName = "{{ room_name }}";
-    const username = "{{ user.username }}";
-    const examId = "{{ exam.id }}";
-</script>
-<script src="{% static 'test.js' %}"></script>
-<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 
-<script>
-    
+<script src="{% static 'js/Student/Close.js' %}"></script>
 
-if (isProctor){
-console.log("isProctor:", isProctor);
+<script src="{% static 'js/Student/Questions.js' %}"></script>
+<script src="{% static 'js/Student/Timer.js' %}"></script>
+<script src="{% static 'js/Student/Tab.js' %}"></script>
+<script src="{% static 'js/Student/Video.js' %}"></script>
 
-const examSocket = new WebSocket(
-'ws://' + window.location.hostname + ':8000/ws/exam/' + examId + '/'
-);
-
-examSocket.onmessage = function (e) {
-const data = JSON.parse(e.data);
-
-if (data.type === "exam_closed") {
-    window.location.href = `/test_end/${examId}/`; 
-}
-};
-}
-examSocket.onclose = function (e) {
-console.error("Exam WebSocket closed unexpectedly.");
-};
-document.getElementById("close-exam-button").addEventListener("click", function () {
-    console.log("Button Clicked! Sending WebSocket message...");
-
-    if (examSocket.readyState === WebSocket.OPEN) {
-        let message = JSON.stringify({
-            type: "close_exam",
-            exam_id: examId
-        });
-
-        console.log("Message being sent:", message);
-        examSocket.send(message);
-        console.log("Close exam message sent successfully!");
-    } else {
-        console.error("WebSocket is not open. ReadyState:", examSocket.readyState);
-    }
-});
-
-
-const APP_ID = "ba895e4e800d4249837ad0a2ff5f06cc"; 
-const CHANNEL_NAME = "Video"; 
-let TOKEN = ""; 
-const UID = Math.floor(Math.random() * 10000); 
-
-async function fetchToken() {
-    try {
-        const response = await fetch(`/get-agora-token/?channelName=${CHANNEL_NAME}&uid=${UID}`);
-        const data = await response.json();
-        TOKEN = data.token;
-        console.log("New Token:", TOKEN);
-
-        startAgora();
-    } catch (error) {
-        console.error("Error fetching token:", error);
-    }
-}
-
-let client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-
-async function startAgora() {
-    try {
-        console.log("Agora Token:", TOKEN);
-
-        const uid = await client.join(APP_ID, CHANNEL_NAME, TOKEN, UID);
-        console.log("User " + uid + " joined channel.");
-
-        if (!isProctor) {
-            const [microphoneTrack, cameraTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-            
-            const localTracks = [microphoneTrack, cameraTrack];
-            await client.publish(localTracks);
-            console.log("Publishing student stream.");
-
-            cameraTrack.play("student-video");
-        } else {
-            client.on("user-published", async (user, mediaType) => {
-                await client.subscribe(user, mediaType);
-                if (mediaType === "video") {
-                    user.videoTrack.play("student-video");
-                }
-            });
-        }
-    } catch (error) {
-        console.error("Agora error:", error);
-    }
-}
-
-fetchToken(); 
- 
-</script>
 
 </body>
 </html>

@@ -20,10 +20,6 @@ class CustomUserCreationForm(UserCreationForm):
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
 
-class AnswerForm(forms.ModelForm):
-    class Meta:
-        model = Answer
-        fields = ['text', 'is_correct']
 
 
 class QuestionForm(forms.ModelForm):
@@ -31,31 +27,58 @@ class QuestionForm(forms.ModelForm):
         model = Question
         fields = ['text']
 
-AnswerFormSet = inlineformset_factory(
-    Question,  # Parent model
-    Answer,    # Child model
-    form=AnswerForm,
-    fields=['text', 'is_correct'],
-    extra=1,   # Number of extra forms
-    can_delete=True,
-    min_num=1, # Minimum number of forms
-    validate_min=True,
-)
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = ['text', 'is_correct']
+
+
+class QuestionWithAnswersForm(forms.Form):
+    text = forms.CharField(label="Question Text", widget=forms.Textarea)
+
+    option_a = forms.CharField(label="Option A")
+    option_b = forms.CharField(label="Option B")
+    option_c = forms.CharField(label="Option C")
+    option_d = forms.CharField(label="Option D")
+
+    CORRECT_CHOICES = [
+        ('A', 'A'),
+        ('B', 'B'),
+        ('C', 'C'),
+        ('D', 'D'),
+    ]
+    correct_option = forms.ChoiceField(choices=CORRECT_CHOICES, widget=forms.RadioSelect)
 
 class ExamForm(forms.ModelForm):
     start_time = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        required=False
+        widget=forms.DateTimeInput(
+            attrs={'type': 'datetime-local'},
+            format='%Y-%m-%dT%H:%M'
+        ),
+        input_formats=['%Y-%m-%dT%H:%M'],
+        required=True
     )
     end_time = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        required=False
+        widget=forms.DateTimeInput(
+            attrs={'type': 'datetime-local'},
+            format='%Y-%m-%dT%H:%M'
+        ),
+        input_formats=['%Y-%m-%dT%H:%M'],
+        required=True
     )
-    duration = forms.IntegerField(help_text="Duration in minutes")  # New field
+    duration = forms.IntegerField(help_text="Duration in minutes")
+    email_list = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 3}),
+        required=False,
+        help_text="Enter comma-separated email addresses to assign examinees."
+    )
 
     class Meta:
         model = Exam
-        fields = ['title', 'description', 'start_time', 'end_time', 'duration']
+        fields = ['title', 'description', 'start_time', 'end_time', 'duration', 'email_list']
+
+
+
 
 
 class ProctorEmailForm(forms.ModelForm):
@@ -67,14 +90,3 @@ class BaseQuestionFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
 
-QuestionFormSet = inlineformset_factory(
-    Exam,        # Parent model (you may change this to suit your project)
-    Question,    # Child model
-    formset=BaseQuestionFormSet,
-    form=QuestionForm,
-    fields=['text'],
-    extra=1,     # Number of extra forms
-    can_delete=True,
-    min_num=1,   # Minimum number of forms
-    validate_min=True,
-)

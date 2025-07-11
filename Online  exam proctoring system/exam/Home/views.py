@@ -1,14 +1,17 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.views.decorators.cache import cache_control
 from .models import Exam,Exam, Question, Answer
 from django import forms
+from django.http import JsonResponse
+import json
+
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .forms import CustomUserCreationForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .forms import QuestionForm, AnswerForm, ExamForm
+from .forms import QuestionWithAnswersForm
 from .forms import ExamForm, QuestionForm, AnswerForm
 from .forms import ProctorEmailForm 
 from .models import ProctorEmail
@@ -169,10 +172,14 @@ def marks_view(request):
         return render(request, 'marks.html', context)
     else:
         return redirect('home')
+        
+        
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def exam_list(request):
-    exams = Exam.objects.all()
-    
+    if request.user.is_authenticated and request.user.groups.filter(name='Company').exists():
+        exams = Exam.objects.filter(company=request.user)
+    else:
+        exams = None
     return render(request, 'exam_list.html', {'exams': exams})
 
 
@@ -180,18 +187,51 @@ def exam_detail(request, exam_id):
     exam = Exam.objects.get(pk=exam_id)
     return render(request, 'exam_list.html', {'exam': exam})
 
+
 def exam_create(request):
     if request.method == 'POST':
-        form = ExamForm(request.POST)
-        if form.is_valid():
-            exam = form.save(commit=False)
-            exam.company = request.user
-            exam.save()
-            return redirect('exam_list')
-    else:
-        form = ExamForm()
-    return render(request, 'exam_create.html', {'form': form})
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
+        exam_data_list = data.get('exams', [])
+        created_exams = []
+
+        for exam_data in exam_data_list:
+            form = ExamForm(exam_data)
+            if form.is_valid():
+                exam = form.save(commit=False)
+                exam.company = request.user
+                exam.save()
+
+                email_list = form.cleaned_data.get('email_list', '')
+                raw_emails = email_list.split(',')
+
+                for email in raw_emails:
+                    email = email.strip().lower()
+                    if not email:
+                        continue
+
+                    user = User.objects.filter(email=email).first()
+                    if user:
+                        exam.examinees.add(user)
+                    else:
+                        print(f"No user found with email: {email}")
+
+
+                created_exams.append(exam.id)
+            else:
+                return JsonResponse({
+                    'error': 'Invalid exam entry',
+                    'details': form.errors
+                }, status=400)
+
+        return JsonResponse({'message': f'{len(created_exams)} exams created successfully', 'ids': created_exams})
+
+    else:  
+        form = ExamForm()
+        return render(request, 'exam_create.html', {'form': form})
 def exam_update(request, exam_id):
     try:
         exam = get_object_or_404(Exam, pk=exam_id)
@@ -214,19 +254,15 @@ def exam_update(request, exam_id):
     
     return render(request, 'exam_update.html', {'form': form, 'exam': exam})
 
+
 def exam_delete(request, exam_id):
-    exam = get_object_or_404(Exam, pk=exam_id)
-    
-    if exam.company != request.user:
-        messages.error(request, "You do not have permission to delete this exam.")
-        return redirect('exam_list')  
     if request.method == 'POST':
+        exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
         exam.delete()
-        return redirect('exam_list')
-
-    return render(request, 'exam_list.html', {'exam': exam})
-
-
+        messages.success(request, f'Exam "{exam.title}" deleted successfully.')
+        return redirect('exam_list')  
+    messages.error(request, 'Invalid request method.')
+    return redirect('exam_list')
 
 def question_list(request, exam_id=None):
     if exam_id is not None:
@@ -246,92 +282,164 @@ def question_detail(request, question_id):
 
 def question_create(request, exam_id):
     exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
+
     if request.method == 'POST':
-        form = QuestionForm(request.POST)
-        if form.is_valid():
-            question = form.save(commit=False)
-            question.exam = exam
-            question.save()
-            return redirect('question_list', exam_id=exam_id)
-    else:
-        form = QuestionForm()
-    return render(request, 'question_create.html', {'form': form, 'exam': exam}) 
+        try:
+            data = json.loads(request.body)
+            questions_data = data.get('questions', [])
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        created_questions = []
+
+        for i, q in enumerate(questions_data):
+            form = QuestionWithAnswersForm(q)
+            if form.is_valid():
+                # Ensure all 4 options are present
+                if not all([
+                    form.cleaned_data.get('option_a'),
+                    form.cleaned_data.get('option_b'),
+                    form.cleaned_data.get('option_c'),
+                    form.cleaned_data.get('option_d')
+                ]):
+                    return JsonResponse({
+                        'error': f'All four options are required at index {i}.'
+                    }, status=400)
+
+                question = Question.objects.create(
+                    exam=exam,
+                    text=form.cleaned_data['text']
+                )
+
+                options = [
+                    ('A', form.cleaned_data['option_a']),
+                    ('B', form.cleaned_data['option_b']),
+                    ('C', form.cleaned_data['option_c']),
+                    ('D', form.cleaned_data['option_d']),
+                ]
+
+                answers = [
+                    Answer(
+                        question=question,
+                        text=opt_text,
+                        is_correct=(form.cleaned_data['correct_option'] == opt_key)
+                    )
+                    for opt_key, opt_text in options
+                ]
+
+                Answer.objects.bulk_create(answers)
+                created_questions.append(question)
+
+            else:
+                return JsonResponse({
+                    'error': f'Invalid question at index {i}',
+                    'details': form.errors
+                }, status=400)
+
+        return JsonResponse({'message': f'{len(created_questions)} questions created successfully.'})
+
+    elif request.method == 'GET':
+        form = QuestionWithAnswersForm()
+        return render(request, 'question_create.html', {'form': form, 'exam': exam})
+
+    return JsonResponse({'error': 'Only POST and GET methods allowed'}, status=405)
+
+
 
 
 
 def question_update(request, exam_id, question_id):
-    try:
-        exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
-        question = get_object_or_404(Question, pk=question_id, exam=exam)
-    except:
-        return redirect(reverse('questions_list', kwargs={'exam_id': exam_id}))
+    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
+    question = get_object_or_404(Question, pk=question_id, exam=exam)
+
     if request.method == 'POST':
-        form = QuestionForm(request.POST, instance=question)
+        if request.headers.get('Content-Type') == 'application/json':
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            form = QuestionWithAnswersForm(data)
+        else:
+            form = QuestionWithAnswersForm(request.POST)
+
         if form.is_valid():
-            form.save()
-            return redirect('question_list', exam_id=exam_id)
+            question.text = form.cleaned_data['text']
+            question.save()
+
+            options = [
+                ('A', form.cleaned_data['option_a']),
+                ('B', form.cleaned_data['option_b']),
+                ('C', form.cleaned_data['option_c']),
+                ('D', form.cleaned_data['option_d']),
+            ]
+
+            existing_answers = list(question.answers.all().order_by('id'))
+
+            if len(existing_answers) == 4:
+                for i, (opt_key, opt_text) in enumerate(options):
+                    existing_answers[i].text = opt_text
+                    existing_answers[i].is_correct = (form.cleaned_data['correct_option'] == opt_key)
+                    existing_answers[i].save()
+            else:
+                question.answers.all().delete()
+                Answer.objects.bulk_create([
+                    Answer(
+                        question=question,
+                        text=opt_text,
+                        is_correct=(form.cleaned_data['correct_option'] == opt_key)
+                    )
+                    for opt_key, opt_text in options
+                ])
+
+            if request.headers.get('Content-Type') == 'application/json':
+                return JsonResponse({'message': f'Question {question_id} updated successfully.'})
+            else:
+                return redirect('question_list', exam_id=exam.id)  
+        errors = form.errors.get_json_data()
+        if request.headers.get('Content-Type') == 'application/json':
+            return JsonResponse({'error': 'Invalid form', 'details': errors}, status=400)
+        else:
+            return render(request, 'question_update.html', {
+                'form': form,
+                'exam': exam,
+                'question': question,
+                'errors': errors
+            })
+
+    # === GET ===
+    answers = list(question.answers.all().order_by('id'))
+    correct_option = None
+
+    if len(answers) == 4:
+        options = ['A', 'B', 'C', 'D']
+        correct_index = next((i for i, a in enumerate(answers) if a.is_correct), None)
+        correct_option = options[correct_index] if correct_index is not None else None
+
+        initial = {
+            'text': question.text,
+            'option_a': answers[0].text,
+            'option_b': answers[1].text,
+            'option_c': answers[2].text,
+            'option_d': answers[3].text,
+            'correct_option': correct_option
+        }
     else:
-        form = QuestionForm(instance=question)
-    return render(request, 'question_update.html', {'question': question,'form': form, 'exam': exam, 'question_id': question_id})
+        initial = {'text': question.text}
+
+    form = QuestionWithAnswersForm(initial=initial)
+    return render(request, 'question_update.html', {
+        'form': form,
+        'exam': exam,
+        'question': question
+    })
+
 
 def question_delete(request, exam_id, question_id):
     exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
     question = get_object_or_404(Question, pk=question_id, exam=exam)
+
     if request.method == 'POST':
         question.delete()
         return redirect('question_list', exam_id=exam_id)
-    return render(request, 'question_list.html', {'question': question, 'exam': exam})
 
-
-def answer_list(request, exam_id, question_id):
-    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
-    question = get_object_or_404(Question, pk=question_id)
-    answers = Answer.objects.filter(question=question)
-    return render(request, 'answer_list.html', {'answers': answers, 'question': question, 'exam_id': exam_id})
-
-
-def answer_detail(request, exam_id, question_id, answer_id):
-    answer = get_object_or_404(Answer, pk=answer_id)
-    return render(request, 'answer_list.html', {'answer': answer})
-
-
-def answer_create(request, exam_id, question_id):
-    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
-    question = get_object_or_404(Question, pk=question_id, exam=exam)
-    if request.method == 'POST':
-        form = AnswerForm(request.POST)
-        if form.is_valid():
-            answer = form.save(commit=False)
-            answer.question = question
-            answer.save()
-            return redirect('answer_list', exam_id=exam_id, question_id=question_id)
-    else:
-        form = AnswerForm()
-    return render(request, 'answer_create.html', {'form': form, 'question': question, 'exam': exam})
-
-
-def answer_update(request, exam_id, question_id, answer_id):
-    try:
-        exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
-        question = get_object_or_404(Question, pk=question_id, exam=exam)
-        answer = get_object_or_404(Answer, pk=answer_id, question=question)
-    except:
-        return redirect(reverse('answers_list', kwargs={'exam_id': exam_id, 'question_id': question_id}))
-    if request.method == 'POST':
-        form = AnswerForm(request.POST, instance=answer)
-        if form.is_valid():
-            form.save()
-            return redirect('answer_list', exam_id=exam_id, question_id=question_id)
-    else:
-        form = AnswerForm(instance=answer)
-    return render(request, 'answer_update.html', {'form': form, 'question': question, 'exam_id': exam_id})
-
-
-def answer_delete(request, exam_id, question_id, answer_id):
-    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
-    question = get_object_or_404(Question, pk=question_id, exam=exam)
-    answer = get_object_or_404(Answer, pk=answer_id, question=question)
-    if request.method == 'POST':
-        answer.delete()
-        return redirect('answer_list', exam_id=exam_id, question_id=question_id)
-    return render(request, 'answer_list.html', {'answer': answer, 'question': question, 'exam_id': exam_id})
+    return redirect('question_list', exam_id=exam_id)
