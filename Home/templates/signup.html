@@ -8,14 +8,15 @@
     <link rel="stylesheet" href="{% static 'css/signup.css' %}">
 </head>
 <body>
+    
     <div class="hero">
     <h1>Register</h1>
     <p>Enter the following details in order to register to the website</p>
     </div>
     <div class="container">
         <div class="formdiv">
-            <form action="{% url 'signup' %}" method="POST">
-                {% csrf_token %}
+            <form action="{% url 'signup' %}" method="POST" class="signup-form">         
+                 {% csrf_token %}
                 {{ form.non_field_errors }}
                 <div class="forms">
                     {{ form.username.label_tag }}

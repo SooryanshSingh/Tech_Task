@@ -12,7 +12,6 @@
     {% for question in questions %}
       <li>
         <h3>{{ question.text }}</h3>
-        <p>Exam: {{ question.exam.title }}</p>
         <form method="post" action="{% url 'question_delete' exam_id question.id %}">
           {% csrf_token %}
           <button type="submit">Delete</button>

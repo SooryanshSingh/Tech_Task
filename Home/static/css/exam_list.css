@@ -1,129 +1,309 @@
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(to right, #6a11cb, #aa076b);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  scroll-behavior: smooth;
-  overflow-x: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-.hero {
-  background-color: indigo;
-  padding: 20px 0;
-  border-top: 2px solid black;
-  border-bottom: 2px solid black;
+body{
+    font-family:'Inter',sans-serif;
+
+    background:
+    linear-gradient(
+        135deg,
+        #5f0a87 0%,
+        #7b1fa2 45%,
+        #a4508b 100%
+    );
+
+    color:white;
+
+    min-height:100vh;
+
+    overflow-x:hidden;
 }
 
-h2 {
-  color: #cdda0fff;
-  text-align: center;
-  font-weight: 700;
-  margin: 0;
-  position: relative;
+/* ================= HERO ================= */
+
+.hero{
+    background:
+    linear-gradient(
+        180deg,
+        rgba(35,15,60,0.96),
+        rgba(55,20,85,0.92)
+    );
+
+    padding:2rem;
+
+    border-bottom:1px solid rgba(255,255,255,0.08);
+
+    backdrop-filter:blur(16px);
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,0.15);
 }
 
-h2::after {
-  content: "";
-  display: block;
-  width: 80px;
-  height: 4px;
-  background-color: #FFA500;
-  margin: 10px auto 0;
-  border-radius: 2px;
+.hero h2{
+    text-align:center;
+
+    font-size:2.6rem;
+
+    font-weight:800;
+
+    color:#ffd369;
+
+    position:relative;
 }
 
-p {
-  color: #ffdede;
-  text-align: center;
-  font-size: 16px;
+.hero h2::after{
+    content:'';
+
+    width:90px;
+    height:4px;
+
+    border-radius:999px;
+
+    background:
+    linear-gradient(to right,#ffb347,#ff5f6d);
+
+    display:block;
+
+    margin:14px auto 0;
 }
 
-ul {
-  list-style-type: none;
-  padding: 0;
-  max-width: 1100px;
-  margin: 30px auto;
+/* ================= EMPTY TEXT ================= */
+
+p{
+    text-align:center;
+
+    color:rgba(255,255,255,0.82);
+
+    font-size:1.05rem;
+
+    margin-top:2rem;
 }
 
-li {
-  background: rgba(255, 255, 255, 0.9);
-  padding: 16px 20px;
-  margin-bottom: 14px;
-  border-radius: 12px;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* ================= CREATE BUTTON ================= */
+
+.create-btn{
+    display:flex;
+
+    justify-content:center;
+
+    margin-top:2rem;
 }
 
-.exam-title {
-  font-weight: 600;
-  color: #2c2c2c;
-  font-size: 20px;
-  flex: 1;
+.create-btn a{
+    text-decoration:none;
+
+    padding:1rem 1.5rem;
+
+    border-radius:16px;
+
+    background:
+    linear-gradient(to right,#ffb347,#ff5f6d);
+
+    color:white;
+
+    font-weight:700;
+
+    transition:0.3s ease;
+
+    box-shadow:
+    0 10px 25px rgba(255,95,109,0.28);
 }
 
-/* === Action area === */
-.form {
-  margin-right: 12px;
+.create-btn a:hover{
+    transform:translateY(-4px);
+
+    box-shadow:
+    0 16px 35px rgba(255,95,109,0.35);
 }
 
-a {
-  font-size: 14px;
-  background-color: #ff9800;
-  color: #1e1e1e;
-  text-decoration: none;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-  margin-left: 10px;
-  transition: all 0.15s ease;
+/* ================= EXAM LIST ================= */
+
+ul{
+    list-style:none;
+
+    max-width:1100px;
+
+    margin:2.5rem auto;
+
+    padding:0 1.5rem;
 }
 
-a:hover {
-  background-color: #ffa726;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+li{
+    background:
+    linear-gradient(
+        145deg,
+        rgba(35,15,60,0.72),
+        rgba(55,25,85,0.62)
+    );
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    border-radius:24px;
+
+    padding:1.4rem 1.6rem;
+
+    margin-bottom:1.4rem;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:1rem;
+
+    flex-wrap:wrap;
+
+    transition:0.3s ease;
+
+    box-shadow:
+    0 18px 35px rgba(0,0,0,0.15);
 }
 
-button {
-  background-color: #ff6b6b;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
+li:hover{
+    transform:translateY(-5px);
 }
 
-button:hover {
-  background-color: #ff5252;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+/* ================= TITLE ================= */
+
+.exam-title{
+    font-size:1.2rem;
+
+    font-weight:700;
+
+    color:white;
+
+    flex:1;
 }
 
-.messages {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 0;
+/* ================= ACTIONS ================= */
+
+.actions{
+    display:flex;
+
+    align-items:center;
+
+    gap:0.8rem;
+
+    flex-wrap:wrap;
 }
 
-.error-message {
-  background: rgba(255, 255, 255, 0.85);
-  color: #2c2c2c;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 12px 16px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  text-align: center;
+.form{
+    margin:0;
 }
 
-a[href*="create"] {
-  display: inline-block;
-  margin: 30px auto;
-  text-align: center;
+/* ================= BUTTONS ================= */
+
+a,
+button{
+    border:none;
+
+    outline:none;
+
+    text-decoration:none;
+
+    padding:0.8rem 1.1rem;
+
+    border-radius:14px;
+
+    font-size:0.95rem;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:0.25s ease;
+}
+
+/* update/view */
+
+.actions a{
+    background:rgba(255,255,255,0.08);
+
+    color:white;
+
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+.actions a:hover{
+    background:rgba(255,255,255,0.15);
+
+    transform:translateY(-2px);
+}
+
+/* delete */
+
+button{
+    background:
+    linear-gradient(to right,#ff5f6d,#ff7b54);
+
+    color:white;
+}
+
+button:hover{
+    transform:translateY(-2px);
+
+    box-shadow:
+    0 10px 22px rgba(255,95,109,0.28);
+}
+
+/* ================= MESSAGES ================= */
+
+.messages{
+    max-width:900px;
+
+    margin:2rem auto;
+
+    padding:0 1.5rem;
+}
+
+.error-message{
+    background:rgba(255,255,255,0.08);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    backdrop-filter:blur(10px);
+
+    color:white;
+
+    padding:1rem;
+
+    border-radius:16px;
+
+    text-align:center;
+
+    margin-bottom:1rem;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:768px){
+
+    .hero h2{
+        font-size:2rem;
+    }
+
+    li{
+        flex-direction:column;
+
+        align-items:flex-start;
+    }
+
+    .actions{
+        width:100%;
+    }
+
+    .actions a,
+    .actions button{
+        width:100%;
+
+        text-align:center;
+    }
 }

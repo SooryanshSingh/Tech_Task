@@ -326,7 +326,7 @@ def question_create(request, exam_id):
                     Answer(
                         question=question,
                         text=opt_text,
-                        is_correct=(form.cleaned_data['correct_option'] == opt_key)
+                        is_correct=(form.cleaned_data['correct_option'].upper() == opt_key)
                     )
                     for opt_key, opt_text in options
                 ]

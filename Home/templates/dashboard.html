@@ -13,13 +13,12 @@
         {% for exam in assigned_exams %}
             <li class="exam-item">
                 <h3>{{ exam.title }}</h3>
-                <p>{{ exam.description }}</p>
                 {% if exam.attempted %}
                     <p class="exam-status attempted">You have attempted this exam.</p>
                 {% elif exam.has_ended %}
                     <p class="exam-status ended">Exam has ended. You cannot attempt it anymore.</p>
                 {% elif exam.has_started %}
-                    <a href="{% url 'test_with_chat' exam_id=exam.id %}" class="exam-link">{{ exam.title }}</a>
+                    <a href="{% url 'test_with_chat' exam_id=exam.id %}" class="exam-link">Start</a>
                 {% else %}
                     <p class="exam-status not-started">Exam has not started yet.</p>
                 {% endif %}

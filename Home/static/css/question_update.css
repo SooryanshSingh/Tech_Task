@@ -1,88 +1,228 @@
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(to right, #6a11cb, #aa076b);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  scroll-behavior: smooth;
-  overflow-x: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-h2 {
-  text-align: center;
-  color: #ffffff;
-  font-weight: 700;
-  margin: 24px 0;
+body{
+    font-family:'Inter',sans-serif;
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #5f0a87 0%,
+        #7b1fa2 45%,
+        #b0006d 100%
+    );
+
+    color:white;
+
+    overflow-x:hidden;
 }
 
-form {
-  max-width: 520px;
-  width: calc(100% - 32px);
-  margin: 20px auto;
-  padding: 24px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+/* ================= TITLE ================= */
+
+h2{
+    margin:2.5rem 0 2rem;
+
+    text-align:center;
+
+    font-size:2.5rem;
+
+    font-weight:800;
+
+    color:#ffd369;
+
+    position:relative;
 }
+
+h2::after{
+    content:'';
+
+    width:90px;
+    height:4px;
+
+    border-radius:999px;
+
+    background:
+    linear-gradient(to right,#ffb347,#ff5f6d);
+
+    display:block;
+
+    margin:14px auto 0;
+}
+
+/* ================= FORM CARD ================= */
+
+form{
+    max-width:720px;
+
+    width:calc(100% - 32px);
+
+    margin:0 auto 3rem;
+
+    padding:2.5rem;
+
+    border-radius:28px;
+
+    background:
+    linear-gradient(
+        145deg,
+        rgba(35,15,60,0.72),
+        rgba(55,25,85,0.62)
+    );
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+    0 20px 40px rgba(0,0,0,0.2);
+}
+
+/* ================= DJANGO FORM FIELDS ================= */
+
+form p{
+    display:flex;
+
+    flex-direction:column;
+
+    gap:0.7rem;
+
+    margin-bottom:1.2rem;
+}
+
+/* ================= LABELS ================= */
+
+label{
+    font-size:0.95rem;
+
+    font-weight:700;
+
+    color:rgba(255,255,255,0.92);
+}
+
+/* ================= INPUTS ================= */
 
 input[type="text"],
 input[type="number"],
 input[type="datetime-local"],
 select,
-textarea {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 18px;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
-  font-size: 16px;
-  font-family: inherit;
-  box-sizing: border-box;
-  background: #ffffff;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+textarea{
+    width:100%;
+
+    padding:1rem;
+
+    border-radius:16px;
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    outline:none;
+
+    background:
+    rgba(255,255,255,0.08);
+
+    color:white;
+
+    font-size:1rem;
+
+    font-family:inherit;
+
+    transition:0.25s ease;
 }
 
-textarea {
-  min-height: 120px;
-  resize: vertical;
+/* textarea */
+
+textarea{
+    min-height:160px;
+
+    resize:vertical;
 }
+
+/* placeholders */
+
+input::placeholder,
+textarea::placeholder{
+    color:rgba(255,255,255,0.45);
+}
+
+/* focus */
 
 input:focus,
 select:focus,
-textarea:focus {
-  outline: none;
-  border-color: #6a11cb;
-  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+textarea:focus{
+    border-color:#ff7b54;
+
+    box-shadow:
+    0 0 0 4px rgba(255,123,84,0.15);
+
+    background:
+    rgba(255,255,255,0.11);
 }
 
-button {
-  display: block;
-  width: 100%;
-  background: linear-gradient(45deg, #ff7e5f, #feb47b);
-  color: white;
-  padding: 15px;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: 600;
-  margin-top: 12px;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+/* ================= RADIO BUTTONS ================= */
+
+input[type="radio"]{
+    accent-color:#ff7b54;
+
+    margin-right:0.5rem;
+
+    transform:scale(1.1);
 }
 
-button + button {
-  margin-top: 16px;
+/* ================= BUTTON ================= */
+
+button{
+    width:100%;
+
+    border:none;
+
+    outline:none;
+
+    cursor:pointer;
+
+    font-size:1rem;
+
+    font-weight:700;
+
+    border-radius:16px;
+
+    padding:1rem 1.5rem;
+
+    margin-top:1.5rem;
+
+    color:white;
+
+    background:
+    linear-gradient(
+        to right,
+        #ff5f6d,
+        #ff9966
+    );
+
+    transition:0.25s ease;
 }
 
-button:hover {
-  background: linear-gradient(45deg, #feb47b, #ff7e5f);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+button:hover{
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 14px 28px rgba(0,0,0,0.22);
 }
 
-button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:768px){
+
+    h2{
+        font-size:2rem;
+    }
+
+    form{
+        padding:1.5rem;
+    }
 }

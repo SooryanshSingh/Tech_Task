@@ -1,31 +1,54 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Proctor Dashboard – Exam {{ exam_id }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/pdash.css' %}">
+
 </head>
+
 <body>
 
-<h1>Exam {{ exam_id }} – Live Proctor Dashboard</h1>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/D_Proc.css' %}">
+    <div class="dashboard-container">
 
-<table border="1" cellpadding="8">
-    <thead>
-        <tr>
-            <th>Student Session</th>
-            <th>Violation Count</th>
-        </tr>
-    </thead>
-    <tbody id="student-table">
-        <!-- rows added dynamically -->
-    </tbody>
-</table>
+        <h1>
+            Exam {{ exam_id }} – Live Proctor Dashboard
+        </h1>
 
-<script>
-    const EXAM_ID = "{{ exam_id }}";
-</script>
-<script src="{% static 'js/Proctor/dashboard.js' %}"></script>
+        <div class="table-card">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Student Session</th>
+                        <th>Violation Count</th>
+                        <th>Risk Score</th>
+                        <th>Latest Event</th>
+                    </tr>
+                </thead>
+
+                <tbody id="student-table">
+                    <!-- rows added dynamically -->
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <script>
+        const EXAM_ID = "{{ exam_id }}";
+    </script>
+
+    <script src="{% static 'js/Proctor/dashboard.js' %}"></script>
 
 </body>
+
 </html>

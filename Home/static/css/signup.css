@@ -1,160 +1,313 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(to right, #6a11cb, #aa076b);
-  color: #f5f5f5;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  scroll-behavior: smooth;
-  overflow-x: hidden;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+body{
+    font-family:'Inter',sans-serif;
+
+    background:
+    linear-gradient(
+        135deg,
+        #5f0a87 0%,
+        #7b1fa2 45%,
+        #a4508b 100%
+    );
+
+    color:white;
+
+    min-height:100vh;
+
+    overflow-x:hidden;
 }
 
+/* ================= HERO ================= */
 
-h1{
-    color: rgb(240, 197, 5);
-    font-size: 35px;
-    text-align: center;
-    font-weight: bold;
-}
-
-p{
-    color: white;
-    font-size: 30px;
-    text-align: center;
-}
 .hero{
-  background-color: indigo;
-  
-  border-top: 2px solid black;
-  border-bottom: 2px solid black;
-  border-left: none; 
-  border-right: none;
+    width:100%;
 
+    padding:2rem 1rem;
 
+    text-align:center;
+
+    background:rgba(20,10,35,0.45);
+
+    backdrop-filter:blur(12px);
+
+    border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-form div{
-    font-size: 25px;;
+.hero h1{
+    font-size:3.2rem;
+
+    margin-bottom:1rem;
+
+    font-weight:800;
+
+    background:
+    linear-gradient(
+        to right,
+        #ffd369,
+        #ffb347
+    );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
 }
 
+.hero p{
+    font-size:1.15rem;
 
+    color:rgba(255,255,255,0.82);
+
+    max-width:700px;
+
+    margin:auto;
+
+    line-height:1.8;
+}
+
+/* ================= CONTAINER ================= */
 
 .container{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    min-height:80vh;
 
+    display:flex;
+    justify-content:center;
+    align-items:center;
 
-   
-}
-.container {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.2);
+    padding:4rem 1.5rem;
+
+    position:relative;
 }
 
+.container::before{
+    content:'';
 
-.formdiv {
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.8); /* Light translucent white background */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    text-align: center;
-    border: 2px solid rgba(255, 175, 189, 0.5); /* Light pink border with transparency */
+    position:absolute;
+
+    width:500px;
+    height:500px;
+
+    background:rgba(255,255,255,0.06);
+
+    border-radius:50%;
+
+    filter:blur(120px);
 }
 
-.formdiv button {
-    padding: 10px 20px;
-    background: linear-gradient(45deg, #ff6b6b, #f06595);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-}
-.formdiv button:hover {
-    background: linear-gradient(45deg, #f06595, #ff6b6b);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+/* ================= FORM CARD ================= */
+
+.formdiv{
+    position:relative;
+    z-index:2;
+
+    width:100%;
+    max-width:520px;
+
+    padding:3rem;
+
+    border-radius:32px;
+
+    background:
+    linear-gradient(
+        145deg,
+        rgba(35,15,60,0.72),
+        rgba(55,25,85,0.62)
+    );
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,0.12);
+
+    box-shadow:
+    0 20px 45px rgba(0,0,0,0.22);
 }
 
-.formdiv button:active {
-    transform: translateY(0);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-}
-.formdiv img {
-    width: 300px;
-    margin-bottom: 20px;
+/* ================= FORM ================= */
+
+.formdiv form{
+    display:flex;
+    flex-direction:column;
 }
 
-.formdiv form {
-    display: flex;
-    flex-direction: column;
+/* KEEPING .forms CLASS */
+
+.forms{
+    display:flex;
+    flex-direction:column;
+
+    margin-bottom:1.4rem;
 }
 
-.formdiv label {
-    margin: 10px 0 5px;
-    font-size: 14px;
-    color: #333;
-    font-weight: bold;
-    transition: color 0.3s ease;
+/* ================= LABELS ================= */
+
+.forms label{
+    margin-bottom:0.7rem;
+
+    font-size:0.95rem;
+
+    font-weight:600;
+
+    color:rgba(255,255,255,0.88);
 }
 
-.formdiv label:hover {
-    color: #ff6b6b;
+/* ================= INPUTS ================= */
+
+.forms input,
+.forms select{
+    width:100%;
+
+    height:56px;
+
+    padding:0 1rem;
+
+    border:none;
+
+    border-radius:16px;
+
+    background:rgba(255,255,255,0.08);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    color:white;
+
+    font-size:1rem;
+
+    outline:none;
+
+    transition:0.3s ease;
 }
 
-.formdiv input {
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+.forms input:focus,
+.forms select:focus{
+    border-color:#ff5f6d;
+
+    box-shadow:
+    0 0 0 4px rgba(255,95,109,0.18);
 }
 
-.formdiv input:focus {
-    border-color: #ff6b6b;
-    box-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
-    outline: none;
-}
-.formdiv {
-    width: 900px; 
-    padding: 20px; 
-    background-color:  rgba(255, 255, 255, 0.8); ;
-    border: 5px solid black;
-    text-align: center;
-    align-self: center; }
+/* ================= SELECT ================= */
 
-img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin-top: 30px;
+.forms select{
+    cursor:pointer;
 }
 
+.forms select option{
+    color:black;
+}
 
-.footer {
-  background: indigo;
-  backdrop-filter: blur(12px);
-  padding: 1.5rem 2rem;
-  text-align: center;
-  color: #f5f5f5;
-  font-size: 0.9rem;
-  margin-top: 3rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+/* ================= ERRORS ================= */
+
+.errorlist{
+    list-style:none;
+
+    margin-top:0.5rem;
+
+    color:#ffd2d2;
+
+    font-size:0.9rem;
+
+    font-weight:600;
+}
+
+/* ================= BUTTON ================= */
+
+.btn-primary{
+    width:100%;
+
+    height:58px;
+
+    border:none;
+
+    border-radius:18px;
+
+    margin-top:1rem;
+
+    background:
+    linear-gradient(
+        to right,
+        #ff5f6d,
+        #ff9966
+    );
+
+    color:white;
+
+    font-size:1rem;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:0.3s ease;
+}
+
+.btn-primary:hover{
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 15px 30px rgba(255,95,109,0.35);
+}
+
+/* ================= FOOTER ================= */
+
+.footer{
+    padding:2rem;
+
+    text-align:center;
+
+    background:rgba(0,0,0,0.18);
+
+    backdrop-filter:blur(12px);
+
+    border-top:1px solid rgba(255,255,255,0.08);
+}
+
+.footer p{
+    color:rgba(255,255,255,0.72);
+
+    font-size:0.95rem;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:768px){
+
+    .hero h1{
+        font-size:2.5rem;
+    }
+
+    .hero p{
+        font-size:1rem;
+    }
+
+    .formdiv{
+        padding:2rem;
+    }
+}
+
+@media(max-width:480px){
+
+    .hero{
+        padding:1.5rem 1rem;
+    }
+
+    .hero h1{
+        font-size:2rem;
+    }
+
+    .formdiv{
+        padding:1.5rem;
+
+        border-radius:24px;
+    }
+
+    .forms input,
+    .forms select,
+    .btn-primary{
+        height:52px;
+    }
 }

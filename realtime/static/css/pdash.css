@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    min-height:100vh;
+
+    background:linear-gradient(
+        135deg,
+        #5f0a87 0%,
+        #7b1fa2 45%,
+        #b0006d 100%
+    );
+
+    color:white;
+
+    padding:3rem 1.5rem;
+}
+
+.dashboard-container{
+    max-width:1200px;
+    margin:0 auto;
+}
+
+h1{
+    text-align:center;
+    font-size:3rem;
+    font-weight:800;
+    margin-bottom:3rem;
+}
+
+h1::after{
+    content:"";
+    display:block;
+    width:90px;
+    height:4px;
+    margin:14px auto 0;
+    border-radius:999px;
+
+    background:linear-gradient(
+        to right,
+        #ffb347,
+        #ff5f6d
+    );
+}
+
+/* ================= CARD ================= */
+
+.table-card{
+
+    width:100%;
+    max-width:1000px;
+
+    margin:0 auto;
+
+    background:rgba(35,15,60,0.72);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    border-radius:24px;
+
+    overflow:hidden;
+
+    backdrop-filter:blur(18px);
+
+    box-shadow:
+        0 18px 35px rgba(0,0,0,0.22);
+}
+
+/* ================= TABLE ================= */
+
+table{
+
+    width:100%;
+
+    table-layout:fixed;
+
+    border-collapse:collapse;
+}
+
+thead tr{
+    background:rgba(255,255,255,0.08);
+}
+
+th,
+td{
+
+    padding:1.2rem 1.5rem;
+
+    text-align:left;
+
+    width:25%;
+}
+
+th{
+
+    color:#ffd369;
+
+    font-size:1rem;
+
+    font-weight:700;
+}
+
+td{
+
+    color:rgba(255,255,255,0.92);
+
+    border-top:
+        1px solid rgba(255,255,255,0.08);
+}
+
+tbody tr{
+
+    cursor:pointer;
+
+    transition:all 0.2s ease;
+}
+
+tbody tr:hover{
+
+    background:
+        rgba(255,255,255,0.05);
+}
+
+tbody tr:last-child td{
+    border-bottom:none;
+}
+
+/* Risk column */
+
+td:nth-child(3){
+
+    font-weight:700;
+
+    color:#ffb347;
+}
+
+/* Empty state */
+
+#student-table:empty::before{
+
+    content:"No students connected yet";
+
+    display:block;
+
+    padding:3rem;
+
+    text-align:center;
+
+    color:rgba(255,255,255,0.65);
+}
+
+/* Responsive */
+
+@media(max-width:768px){
+
+    h1{
+        font-size:2rem;
+    }
+
+    body{
+        padding:2rem 1rem;
+    }
+
+    th,
+    td{
+        padding:0.9rem;
+        font-size:0.9rem;
+    }
+}
+

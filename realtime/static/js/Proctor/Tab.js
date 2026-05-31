@@ -53,7 +53,8 @@ document.addEventListener("DOMContentLoaded", function () {
             data.type === "violation_update" &&
             data.full_session_id === sessionId
         ) {
-            addEventToTimeline("Tab violation detected");
-        }
+            addEventToTimeline(
+                `${data.event_type}`
+            );        }
     };
 });

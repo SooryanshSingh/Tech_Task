@@ -1,47 +1,104 @@
 {% extends "home.html" %}
 {% load static %}
+
 {% block title %}Details of exams{% endblock %}
-{% block header %}View your exams{% endblock %}
+
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/exam_list.css' %}" />
 {% endblock %}
-{% block content %}
-  <div class="hero">
-  <h2>List of exams</h2>
-  </div>
-  {% if not user.is_authenticated %}
-    <p>Please login to continue</p>
-  {% else %}
-    {% if user.groups.all.0.name == 'Company' %}
-      {% if exams %}
-        <ul>
-          {% for exam in exams %}
-            <li>
-              <span class="exam-title">{{ exam.title }}</span>
-              <form class="form" method="post" action="{% url 'exam_delete' exam.id %}">
-                {% csrf_token %}
-                <button type="submit">Delete</button>
-              </form>
-              <a href="{% url 'exam_update' exam.id %}">Update</a>
-              <a href="{% url 'question_list' exam.id%}">View Questions</a> 
-            </li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No exams available.</p>
-      {% endif %}
-    {% else %}
-      <p>You are not authorized to view this page.</p>
-    {% endif %}
-  {% endif %}
-  <a href="{% url 'exam_create' %}">Create a new exam</a>
-  {% if messages %}
-    <ul class="messages">
-      {% for message in messages %}
-        <li class="error-message" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
 
- 
+{% block content %}
+
+<div class="hero">
+    <h2>List of Exams</h2>
+</div>
+
+{% if not user.is_authenticated %}
+
+    <p>Please login to continue</p>
+
+{% else %}
+
+    {% if user.groups.all.0.name == 'Company' %}
+
+        {% if exams %}
+
+            <ul>
+
+                {% for exam in exams %}
+
+                <li>
+
+                    <span class="exam-title">
+                        {{ exam.title }}
+                    </span>
+
+                    <div class="actions">
+
+                        <form
+                            class="form"
+                            method="post"
+                            action="{% url 'exam_delete' exam.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <button type="submit">
+                                Delete
+                            </button>
+                        </form>
+
+                        <a href="{% url 'exam_update' exam.id %}">
+                            Update
+                        </a>
+
+                        <a href="{% url 'question_list' exam.id %}">
+                            View Questions
+                        </a>
+
+                    </div>
+
+                </li>
+
+                {% endfor %}
+
+            </ul>
+
+        {% else %}
+
+            <p>No exams available.</p>
+
+        {% endif %}
+
+    {% else %}
+
+        <p>You are not authorized to view this page.</p>
+
+    {% endif %}
+
+{% endif %}
+
+<div class="create-btn">
+
+    <a href="{% url 'exam_create' %}">
+        Create New Exam
+    </a>
+
+</div>
+
+{% if messages %}
+
+<ul class="messages">
+
+    {% for message in messages %}
+
+    <li class="error-message">
+        {{ message }}
+    </li>
+
+    {% endfor %}
+
+</ul>
+
+{% endif %}
+
 {% endblock %}

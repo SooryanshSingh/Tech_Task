@@ -14,12 +14,12 @@ import os
 from pathlib import Path
 import dj_database_url
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+SECRET_KEY = "django-insecure-dev-key"
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = True
 
-AGORA_APP_ID = os.environ.get("AGORA_APP_ID")
-AGORA_APP_CERT = os.environ.get("AGORA_APP_CERT")
+AGORA_APP_ID = "ba895e4e800d4249837ad0a2ff5f06cc"
+AGORA_APP_CERT = "2f7a1ce814e04ef0a5dda1d5fbb92dfe"
 
 
 

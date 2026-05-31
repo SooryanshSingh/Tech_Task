@@ -1,75 +1,202 @@
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(to right, #6a11cb, #aa076b);
-  color: #f5f5f5;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  scroll-behavior: smooth;
-  overflow-x: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
+
+body{
+    font-family:'Inter',sans-serif;
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #5f0a87 0%,
+        #7b1fa2 45%,
+        #b0006d 100%
+    );
+
+    color:white;
+
+    overflow-x:hidden;
+}
+
+/* ================= HERO ================= */
+
 .hero{
-  background-color: indigo;
-  
-  border-top: 2px solid black;
-  border-bottom: 2px solid black;
-  border-left: none; 
-  border-right: none;
+    background:
+    linear-gradient(
+        180deg,
+        rgba(35,15,60,0.96),
+        rgba(55,20,85,0.92)
+    );
 
+    padding:2rem;
 
+    border-bottom:1px solid rgba(255,255,255,0.08);
+
+    backdrop-filter:blur(16px);
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,0.15);
 }
+
 .hero h2{
-    text-align: center;
-}
-.marks-card {
-  background-color: #ffffff;
-  max-width: 720px;
-  margin: 2.5rem auto;
-  padding: 2rem 2.4rem;
-  border-radius: 16px;
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.15);
-}
+    text-align:center;
 
-.examtitle {
-  margin: 0 0 1.6rem 0;
-  padding: 0.8rem 1.2rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #4b0082;
-  background: #f1e9ff;
-  border-left: 6px solid #6a11cb;
-  border-radius: 8px;
+    font-size:2.5rem;
+
+    font-weight:800;
+
+    color:#ffd369;
+
+    position:relative;
 }
 
-.marks-card p:first-of-type {
-  font-size: 1.1rem;
-  color: #495057;
-  margin-bottom: 0.6rem;
-  text-align: center;
+.hero h2::after{
+    content:'';
+
+    width:90px;
+    height:4px;
+
+    border-radius:999px;
+
+    background:
+    linear-gradient(to right,#ffb347,#ff5f6d);
+
+    display:block;
+
+    margin:14px auto 0;
 }
 
-.marks-card p:last-of-type {
-  margin-top: 1rem;
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #198754;
-  text-align: center;
-  background: #eafaf1;
-  padding: 0.8rem 1.4rem;
-  border-radius: 10px;
+/* ================= EMPTY TEXT ================= */
+
+body > p{
+  text-align:center;
+
+  margin-top:3.5rem;
+
+  color:rgba(255,255,255,0.82);
+
+  font-size:1.35rem;
+
+  font-weight:600;
+
+  letter-spacing:0.3px;
+}
+/* ================= CARD ================= */
+
+.marks-card{
+    max-width:760px;
+
+    margin:2.5rem auto;
+
+    padding:2rem;
+
+    border-radius:28px;
+
+    background:
+    linear-gradient(
+        145deg,
+        rgba(35,15,60,0.72),
+        rgba(55,25,85,0.62)
+    );
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+    0 20px 40px rgba(0,0,0,0.2);
+
+    transition:0.3s ease;
 }
 
-@media (max-width: 768px) {
-  .marks-card {
-    margin: 2rem 1rem;
-    padding: 1.6rem 1.8rem;
-  }
+.marks-card:hover{
+    transform:translateY(-5px);
+}
 
-  .examtitle {
-    font-size: 1.3rem;
-  }
+/* ================= EXAM TITLE ================= */
 
-  .marks-card p:last-of-type {
-    font-size: 1.4rem;
-  }
+.examtitle{
+    margin-bottom:1.8rem;
+
+    padding:1rem 1.2rem;
+
+    border-radius:18px;
+
+    font-size:1.4rem;
+
+    font-weight:800;
+
+    color:white;
+
+    background:
+    rgba(255,255,255,0.08);
+
+    border-left:5px solid #ff7b54;
+}
+
+/* ================= TEXT ================= */
+
+.marks-card p{
+    font-size:1.05rem;
+
+    color:rgba(255,255,255,0.85);
+
+    margin-bottom:1rem;
+}
+
+/* ================= MARKS ================= */
+
+.marks-card p:last-of-type{
+    margin-top:1.5rem;
+
+    padding:1rem;
+
+    border-radius:18px;
+
+    text-align:center;
+
+    font-size:1.5rem;
+
+    font-weight:800;
+
+    color:white;
+
+    background:
+    linear-gradient(
+        to right,
+        #ff5f6d,
+        #ff9966
+    );
+
+    box-shadow:
+    0 10px 22px rgba(255,95,109,0.25);
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:768px){
+
+    .hero h2{
+        font-size:2rem;
+    }
+
+    .marks-card{
+        margin:2rem 1rem;
+
+        padding:1.5rem;
+    }
+
+    .examtitle{
+        font-size:1.2rem;
+    }
+
+    .marks-card p:last-of-type{
+        font-size:1.25rem;
+    }
 }

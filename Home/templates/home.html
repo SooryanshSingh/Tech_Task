@@ -42,12 +42,35 @@
     </header>
 
     <main>
-        <div class="hero-main">
-        <section class="hero">
-            <h1>Revolutionize Your Testing Experience</h1>
-            <p>Secure, efficient, and tailored for every user's needs</p>
-        </section>
+       <section class="hero-main">
+    <div class="hero-content">
+        <span class="hero-badge">
+            AI Powered Examination Platform
+        </span>
+
+        <h1>
+            Revolutionize Your
+            <span>Testing Experience</span>
+        </h1>
+
+        <p>
+            Secure, scalable and modern online examinations with
+            AI-assisted proctoring and real-time monitoring.
+        </p>
+
+        <div class="hero-actions">
+            {% if not user.is_authenticated %}
+                <a href="{% url 'button1' %}" class="btn primary">
+                    Get Started
+                </a>
+
+                <a href="{% url 'signup' %}" class="btn ghost">
+                    Create Account
+                </a>
+            {% endif %}
         </div>
+    </div>
+</section>
 
         <section id="features" class="features">
             <div class="card">

@@ -1,89 +1,237 @@
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(to right, #6a11cb, #aa076b);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  scroll-behavior: smooth;
-  overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-h2 {
-  text-align: center;
-  color: #ffffff;
-  font-weight: 700;
-  margin: 24px 0;
+body{
+    font-family:'Inter',sans-serif;
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #5f0a87 0%,
+        #7b1fa2 45%,
+        #b0006d 100%
+    );
+
+    color:white;
+
+    overflow-x:hidden;
 }
 
-form {
-  max-width: 520px;
-  width: calc(100% - 32px);
-  margin: 20px auto;
-  padding: 24px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+/* ================= MAIN WRAPPER ================= */
+
+#exam-forms-container{
+    max-width:900px;
+
+    margin:4rem auto 2rem;
+
+    padding:0 1.5rem;
 }
 
-input[type="text"],
-input[type="number"],
-input[type="datetime-local"],
-select,
-textarea {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 18px;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
-  font-size: 16px;
-  font-family: inherit;
-  box-sizing: border-box;
-  background: #ffffff;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+/* ================= FORM CARD ================= */
+
+.exam-form{
+    background:
+    linear-gradient(
+        145deg,
+        rgba(35,15,60,0.72),
+        rgba(55,25,85,0.62)
+    );
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    border-radius:28px;
+
+    padding:2.5rem;
+
+    box-shadow:
+    0 20px 40px rgba(0,0,0,0.2);
 }
 
-textarea {
-  min-height: 120px;
-  resize: vertical;
+/* ================= FORM ================= */
+
+.single-exam-form{
+    display:flex;
+    flex-direction:column;
+    gap:1.4rem;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: #6a11cb;
-  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+/* each django form field */
+
+.single-exam-form p{
+    display:flex;
+    flex-direction:column;
+
+    gap:0.7rem;
 }
 
-button {
-  width: 100%;
-  background: linear-gradient(45deg, #ff7e5f, #feb47b);
-  color: white;
-  padding: 15px;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: 600;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+/* labels */
+
+.single-exam-form label{
+    font-size:0.95rem;
+
+    font-weight:700;
+
+    color:rgba(255,255,255,0.92);
 }
 
-button:hover {
-  background: linear-gradient(45deg, #feb47b, #ff7e5f);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+/* inputs */
+
+.single-exam-form input,
+.single-exam-form textarea,
+.single-exam-form select{
+    width:100%;
+
+    padding:1rem 1rem;
+
+    border-radius:16px;
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    outline:none;
+
+    background:
+    rgba(255,255,255,0.08);
+
+    color:white;
+
+    font-size:1rem;
+
+    transition:0.25s ease;
 }
 
-button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+/* textarea */
+
+.single-exam-form textarea{
+    min-height:140px;
+
+    resize:vertical;
 }
-button {
-  display: block;
-  margin-bottom: 16px;
+
+/* placeholder */
+
+.single-exam-form input::placeholder,
+.single-exam-form textarea::placeholder{
+    color:rgba(255,255,255,0.45);
+}
+
+/* focus */
+
+.single-exam-form input:focus,
+.single-exam-form textarea:focus,
+.single-exam-form select:focus{
+    border-color:#ff7b54;
+
+    box-shadow:
+    0 0 0 4px rgba(255,123,84,0.15);
+
+    background:
+    rgba(255,255,255,0.11);
+}
+
+/* date/time picker */
+
+.single-exam-form input[type="datetime-local"]{
+    color:white;
+}
+
+/* ================= BUTTONS ================= */
+
+button{
+    border:none;
+
+    outline:none;
+
+    cursor:pointer;
+
+    font-size:1rem;
+
+    font-weight:700;
+
+    border-radius:16px;
+
+    padding:1rem 1.5rem;
+
+    transition:0.25s ease;
+}
+
+/* add button */
+
+button[onclick="addExamForm()"]{
+    margin-left:calc(50% - 220px);
+
+    margin-top:1rem;
+
+    background:
+    linear-gradient(
+        to right,
+        #7f5af0,
+        #9b5cff
+    );
+
+    color:white;
+}
+
+/* submit button */
+
+button[onclick="submitExams()"]{
+    margin-left:1rem;
+
+    background:
+    linear-gradient(
+        to right,
+        #ff5f6d,
+        #ff9966
+    );
+
+    color:white;
+}
+
+/* hover */
+
+button:hover{
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 14px 28px rgba(0,0,0,0.22);
+}
+
+/* ================= HR ================= */
+
+hr{
+    border:none;
+
+    height:1px;
+
+    background:
+    rgba(255,255,255,0.08);
+
+    margin-top:2rem;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:768px){
+
+    #exam-forms-container{
+        margin-top:2rem;
+    }
+
+    .exam-form{
+        padding:1.5rem;
+    }
+
+    button{
+        width:calc(100% - 3rem);
+
+        margin:1rem 1.5rem 0 !important;
+    }
 }
