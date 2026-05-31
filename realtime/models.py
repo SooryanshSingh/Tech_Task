@@ -25,3 +25,9 @@ class ExamAuditLog(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
 
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    evidence_image = models.ImageField(
+        upload_to="audit_evidence/",
+        null=True,
+        blank=True
+    )

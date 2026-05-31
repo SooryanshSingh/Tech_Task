@@ -97,6 +97,8 @@ CHANNEL_LAYERS = {
     },
 }
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASE_URL = os.environ.get("DATABASE_URL")

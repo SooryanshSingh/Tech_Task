@@ -5,7 +5,10 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
 from .models import ExamAuditLog
+import base64
+import uuid
 
+from django.core.files.base import ContentFile
 
 EXAM_SESSIONS = defaultdict(dict)
 
@@ -15,7 +18,18 @@ VIOLATION_WEIGHTS = {
     "NO_FACE": 20,
     "MULTIPLE_FACES": 35,
 }
+MAX_EVIDENCE_SIZE = 500_000
 
+MAX_EVIDENCE_PER_SESSION = 50
+
+ALLOWED_EVIDENCE_EVENTS = {
+
+    "NO_FACE",
+
+    "MULTIPLE_FACES",
+
+    "PHONE_DETECTED"
+}
 
 class ExamControlConsumer(AsyncWebsocketConsumer):
 
@@ -131,13 +145,12 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
             session_id=self.session_id
         ).order_by("timestamp")
 
-        violation_count = logs.count()
-
+        violation_count = logs.filter(event_type__in=VIOLATION_WEIGHTS.keys()).count()
         risk_score = sum(
             log.severity
             for log in logs
+            if log.event_type in VIOLATION_WEIGHTS
         )
-
         latest_event = (
             logs.last().event_type
             if logs.exists()
@@ -169,29 +182,69 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def log_event(
-        self,
-        event_type,
-        severity,
-        metadata=None
-    ):
-        ExamAuditLog.objects.create(
-            exam_id=self.exam_id,
+    self,
+    event_type,
+    severity,
+    metadata=None,
+    evidence_image=None
+):
 
-            actor=(
-                self.user
-                if self.user.is_authenticated
-                else None
-            ),
+        log = ExamAuditLog.objects.create(
+        exam_id=self.exam_id,
 
-            session_id=self.session_id,
+        actor=(
+            self.user
+            if self.user.is_authenticated
+            else None
+        ),
 
-            event_type=event_type,
+        session_id=self.session_id,
 
-            severity=severity,
+        event_type=event_type,
 
-            metadata=metadata or {}
-        )
+        severity=severity,
 
+        metadata=metadata or {}
+    )
+
+        if evidence_image:
+
+            try:
+                if event_type not in ALLOWED_EVIDENCE_EVENTS:
+
+                    evidence_image = None
+                if evidence_image:
+
+                    if len(evidence_image) > MAX_EVIDENCE_SIZE:
+
+                        print("[EVIDENCE] Too large")
+
+                        evidence_image = None
+
+                    if evidence_image:
+
+                        header, imgstr = evidence_image.split(
+                    ";base64,"
+                    )
+
+                        file = ContentFile(
+                        base64.b64decode(imgstr),
+                        name=f"{uuid.uuid4()}.jpg"
+                    )
+
+                        log.evidence_image.save(
+                        file.name,
+                        file,
+                        save=True
+                    )
+            except Exception as e:
+
+                print(
+                "[EVIDENCE SAVE ERROR]",
+                e
+            )
+
+        return log
     @database_sync_to_async
     def check_is_proctor(self):
 
@@ -202,6 +255,12 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
                 name="Proctor"
             ).exists()
         )
+    @database_sync_to_async
+    def evidence_count(self):
+
+        return ExamAuditLog.objects.filter(
+        session_id=self.session_id
+    ).exclude(evidence_image__isnull=True).count()
 
     async def connect(self):
 
@@ -340,6 +399,14 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
         if data.get("type") == "violation":
 
             event_type = data.get("event")
+            evidence = data.get(
+                "evidence"
+            )
+            print(
+                "[EVIDENCE RECEIVED]",
+                evidence is not None,
+                len(evidence) if evidence else 0
+            )
 
             severity = VIOLATION_WEIGHTS.get(
                 event_type,
@@ -364,7 +431,16 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
             session["events"].append({
                 "event": event_type
             })
+            evidence_count = (
+            await self.evidence_count()
+            )
+            if (
+            evidence_count >=MAX_EVIDENCE_PER_SESSION):
 
+                evidence = None
+            
+            
+            
             await self.log_event(
                 event_type=event_type,
 
@@ -373,7 +449,8 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
                 metadata={
                     "risk_score":
                     session["risk_score"]
-                }
+                },
+                evidence_image = evidence
             )
 
             await self.channel_layer.group_send(
