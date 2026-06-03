@@ -79,7 +79,7 @@ def signup(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             role = form.cleaned_data['role']
-            if role == 'Company':
+            if role == 'Test Admin':
                 group, _ = Group.objects.get_or_create(name="Company")
                 user.groups.add(group)
 

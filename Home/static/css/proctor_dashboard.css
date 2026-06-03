@@ -1,91 +1,301 @@
-/* proctor_dashboard.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(to right, #6a11cb, #aa076b);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  scroll-behavior: smooth;
-  overflow-x: hidden;
-}
-.container {
-    max-width: 900px;
-    margin: 50px auto;
-    padding: 30px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-    transition: box-shadow 0.3s ease;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
 }
 
-.container:hover {
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+body{
+
+    min-height:100vh;
+
+    background:linear-gradient(
+        135deg,
+        #5f0a87 0%,
+        #7b1fa2 45%,
+        #b0006d 100%
+    );
+
+    color:white;
 }
 
-h1 {
-    color: #2c3e50;
-    font-size: 2.8rem;
-    text-align: center;
-    margin-bottom: 25px;
-    font-weight: bold;
+/* ===========================
+   MAIN CONTAINER
+=========================== */
+
+.container{
+
+    max-width:1100px;
+
+    margin:60px auto;
+
+    padding:50px;
+
+    background:rgba(35,15,60,0.72);
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    border-radius:28px;
+
+    box-shadow:
+        0 20px 40px rgba(0,0,0,0.25);
 }
 
-h2 {
-    color: #34495e;
-    font-size: 1.8rem;
-    text-align: center;
-    margin-bottom: 30px;
-    font-weight: normal;
+/* ===========================
+   HEADINGS
+=========================== */
+
+h1{
+
+    text-align:center;
+
+    font-size:3.2rem;
+
+    font-weight:800;
+
+    line-height:1.3;
+
+    margin-bottom:20px;
+
+    color:#ffffff;
 }
 
-.exam-list {
-    list-style-type: none;
-    padding: 0;
+h1::after{
+
+    content:"";
+
+    display:block;
+
+    width:90px;
+
+    height:4px;
+
+    margin:18px auto 0;
+
+    border-radius:999px;
+
+    background:linear-gradient(
+        to right,
+        #ffb347,
+        #ff5f6d
+    );
 }
 
-.exam-item {
-    margin-bottom: 25px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    padding: 25px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+h2{
+
+    text-align:center;
+
+    font-size:1.3rem;
+
+    font-weight:400;
+
+    color:rgba(255,255,255,0.8);
+
+    margin-bottom:45px;
 }
 
-.exam-item:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+/* ===========================
+   EXAM LIST
+=========================== */
+
+.exam-list{
+    list-style:none;
 }
 
-.exam-title {
-    color: #3498db;
-    font-size: 1.8rem;
-    text-decoration: none;
-    transition: color 0.3s ease;
+/* ===========================
+   EXAM CARD
+=========================== */
+
+.exam-item{
+
+    position:relative;
+
+    background:rgba(255,255,255,0.06);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    border-radius:22px;
+
+    padding:28px;
+
+    margin-bottom:24px;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
 }
 
-.exam-title:hover {
-    color: #2980b9;
-    text-decoration: underline;
+.exam-item:hover{
+
+    transform:translateY(-5px);
+
+    border-color:
+        rgba(255,255,255,0.18);
+
+    box-shadow:
+        0 12px 28px rgba(0,0,0,0.25);
 }
 
-.exam-description {
-    color: #7f8c8d;
-    margin-top: 10px;
-    font-size: 1.1rem;
+.exam-item::before{
+
+    content:"EXAM";
+
+    position:absolute;
+
+    top:18px;
+
+    right:22px;
+
+    font-size:0.75rem;
+
+    font-weight:700;
+
+    letter-spacing:2px;
+
+    color:rgba(255,255,255,0.35);
 }
 
-.exam-details {
-    margin-top: 15px;
-    font-size: 1rem;
+/* ===========================
+   EXAM TITLE
+=========================== */
+
+.exam-title{
+
+    display:inline-block;
+
+    text-decoration:none;
+
+    color:white;
+
+    font-size:1.7rem;
+
+    font-weight:700;
+
+    margin-bottom:12px;
+
+    transition:0.25s ease;
 }
 
-.exam-details p {
-    margin: 5px 0;
-    color: #95a5a6;
+.exam-title:hover{
+
+    color:#ffd6ff;
 }
 
-strong {
-    color: #2c3e50;
+/* ===========================
+   DESCRIPTION
+=========================== */
+
+.exam-description{
+
+    color:rgba(255,255,255,0.78);
+
+    font-size:1rem;
+
+    margin-top:8px;
+
+    margin-bottom:15px;
+
+    line-height:1.7;
+}
+
+/* ===========================
+   DETAILS
+=========================== */
+
+.exam-details{
+
+    margin-top:18px;
+
+    padding-top:16px;
+
+    border-top:
+        1px solid rgba(255,255,255,0.08);
+}
+
+.exam-details p{
+
+    color:rgba(255,255,255,0.82);
+
+    margin:8px 0;
+}
+
+.exam-details strong{
+
+    color:#ffffff;
+
+    font-weight:600;
+}
+
+/* ===========================
+   EMPTY STATE
+=========================== */
+
+.exam-list li{
+
+    color:white;
+}
+
+/* ===========================
+   SCROLLBAR
+=========================== */
+
+::-webkit-scrollbar{
+
+    width:10px;
+}
+
+::-webkit-scrollbar-track{
+
+    background:rgba(255,255,255,0.05);
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:rgba(255,255,255,0.25);
+
+    border-radius:999px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:rgba(255,255,255,0.4);
+}
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media(max-width:768px){
+
+    .container{
+
+        margin:20px;
+
+        padding:30px 22px;
+    }
+
+    h1{
+
+        font-size:2.2rem;
+    }
+
+    h2{
+
+        font-size:1rem;
+    }
+
+    .exam-title{
+
+        font-size:1.3rem;
+    }
+
+    .exam-item{
+
+        padding:22px;
+    }
 }

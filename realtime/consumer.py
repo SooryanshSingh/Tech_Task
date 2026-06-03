@@ -4,19 +4,23 @@ from collections import defaultdict
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
-from .models import ExamAuditLog
+from .models import (
+    ExamAuditLog,
+    ExamSession
+)
 import base64
 import uuid
 
 from django.core.files.base import ContentFile
 
-EXAM_SESSIONS = defaultdict(dict)
 
 VIOLATION_WEIGHTS = {
     "TAB_SWITCH": 10,
     "FULLSCREEN_EXIT": 15,
     "NO_FACE": 20,
     "MULTIPLE_FACES": 35,
+    "PHONE_DETECTED": 40,
+
 }
 MAX_EVIDENCE_SIZE = 500_000
 
@@ -138,56 +142,33 @@ class ExamControlConsumer(AsyncWebsocketConsumer):
 class TabMonitorConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
-    def load_session_state(self):
+    def get_or_create_session(self):
 
-        logs = ExamAuditLog.objects.filter(
-            exam_id=self.exam_id,
-            session_id=self.session_id
-        ).order_by("timestamp")
-
-        violation_count = logs.filter(event_type__in=VIOLATION_WEIGHTS.keys()).count()
-        risk_score = sum(
-            log.severity
-            for log in logs
-            if log.event_type in VIOLATION_WEIGHTS
+        session, created = (
+            ExamSession.objects.get_or_create(
+                exam_id=self.exam_id,
+                user=self.user,
+                defaults={
+                    "session_id": self.session_id
+                }
+            )
         )
-        latest_event = (
-            logs.last().event_type
-            if logs.exists()
-            else "CONNECTED"
-        )
+        if not created:
 
-        events = []
+            session.is_active = True
+            session.save(
+                update_fields=["is_active"]
+            )
 
-        for log in logs:
-
-            events.append({
-                "event": log.event_type
-            })
-
-        return {
-
-            "violation_count":
-            violation_count,
-
-            "risk_score":
-            risk_score,
-
-            "latest_event":
-            latest_event,
-
-            "events":
-            events
-        }
-
+        return session    
+    
     @database_sync_to_async
     def log_event(
     self,
     event_type,
     severity,
     metadata=None,
-    evidence_image=None
-):
+    evidence_image=None):
 
         log = ExamAuditLog.objects.create(
         exam_id=self.exam_id,
@@ -245,6 +226,42 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
             )
 
         return log
+    
+    @database_sync_to_async
+    def update_session(
+        self,
+        session,
+        severity,
+        event_type
+        ):
+
+        session.violation_count += 1
+
+        session.risk_score += severity
+
+        session.latest_event = event_type
+
+        session.save(
+        update_fields=[
+            "violation_count",
+            "risk_score",
+            "latest_event"
+        ]
+        )
+
+        
+        return session
+    
+    @database_sync_to_async
+    def mark_inactive(self):
+
+        ExamSession.objects.filter(
+            session_id=self.session_id
+        ).update(
+            is_active=False
+        )
+    
+
     @database_sync_to_async
     def check_is_proctor(self):
 
@@ -291,19 +308,9 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
 
             self.session_id = (
                 f"{self.exam_id}_user_{self.user.id}"
-            )
+             )
 
-            if self.session_id not in EXAM_SESSIONS[self.exam_id]:
-
-                EXAM_SESSIONS[
-                    self.exam_id
-                ][self.session_id] = (
-                    await self.load_session_state()
-                )
-
-            session = EXAM_SESSIONS[
-                self.exam_id
-            ][self.session_id]
+            session = await self.get_or_create_session()
 
             await self.channel_layer.group_add(
                 self.student_group,
@@ -323,13 +330,16 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
                     self.session_id,
 
                     "violation_count":
-                    session["violation_count"],
+                    session.violation_count,
 
                     "risk_score":
-                    session["risk_score"],
+                    session.risk_score,
 
                     "event_type":
-                    session["latest_event"],
+                    session.latest_event,
+
+                    "is_active":
+                    session.is_active,
                 }
             )
 
@@ -338,41 +348,47 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
         if self.is_proctor:
             await self.sync_existing_students()
 
+
+    @database_sync_to_async
+    def get_exam_sessions(self):
+
+        return list(
+            ExamSession.objects.filter(
+            exam_id=self.exam_id
+        )
+    )
+
     async def sync_existing_students(self):
 
-        sessions = EXAM_SESSIONS.get(
-            self.exam_id,
-            {}
-        )
+        sessions = await self.get_exam_sessions()
 
-        for session_id, data in sessions.items():
+        for session in sessions:
 
             await self.send(
-                text_data=json.dumps({
+            text_data=json.dumps({
 
-                    "type":
-                    "student_joined",
+                "type":
+                "student_joined",
 
-                    "masked_session_id":
-                    session_id[-6:],
+                "masked_session_id":
+                session.session_id[-6:],
 
-                    "full_session_id":
-                    session_id,
+                "full_session_id":
+                session.session_id,
 
-                    "violation_count":
-                    data["violation_count"],
+                "violation_count":
+                session.violation_count,
 
-                    "risk_score":
-                    data["risk_score"],
+                "risk_score":
+                session.risk_score,
 
-                    "event_type":
-                    data.get(
-                        "latest_event",
-                        "CONNECTED"
-                    ),
-                })
-            )
-
+                "event_type":
+                session.latest_event,
+                "is_active":
+                session.is_active,
+            })
+        )
+                
     async def disconnect(self, close_code):
 
         if self.is_proctor:
@@ -384,11 +400,26 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
 
         else:
 
+            await self.mark_inactive()
+
+            await self.channel_layer.group_send(
+                self.proctor_group,
+                {
+                    "type":
+                    "student_status_update",
+
+                    "full_session_id":
+                    self.session_id,
+
+                    "is_active":
+                    False
+                }
+            )
+
             await self.channel_layer.group_discard(
                 self.student_group,
                 self.channel_name
             )
-
     async def receive(self, text_data):
 
         if self.is_proctor:
@@ -413,42 +444,29 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
                 5
             )
 
-            session = EXAM_SESSIONS[
-                self.exam_id
-            ].get(
-                self.session_id
-            )
+            session = await self.get_or_create_session()
 
-            if not session:
-                return
-
-            session["violation_count"] += 1
-
-            session["risk_score"] += severity
-
-            session["latest_event"] = event_type
-
-            session["events"].append({
-                "event": event_type
-            })
+            session = await self.update_session(session,severity,event_type)            
+            
+            
+            
             evidence_count = (
-            await self.evidence_count()
+                await self.evidence_count()
             )
-            if (
-            evidence_count >=MAX_EVIDENCE_PER_SESSION):
 
+            if (
+                evidence_count >=
+                MAX_EVIDENCE_PER_SESSION
+            ):
                 evidence = None
-            
-            
-            
-            await self.log_event(
+            log = await self.log_event(
                 event_type=event_type,
 
                 severity=severity,
 
                 metadata={
                     "risk_score":
-                    session["risk_score"]
+                    session.risk_score
                 },
                 evidence_image = evidence
             )
@@ -466,13 +484,27 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
                     self.session_id,
 
                     "violation_count":
-                    session["violation_count"],
+                    session.violation_count,
 
                     "risk_score":
-                    session["risk_score"],
+                    session.risk_score,
 
                     "event_type":
                     event_type,
+                    "audit_id":
+                    log.id,
+
+                    "evidence_url":
+                        (
+                    log.evidence_image.url
+                    if log.evidence_image
+                    else None
+                        ),
+                    "log_timestamp":
+                    log.timestamp.strftime(
+                    "%H:%M:%S"
+                    )
+
                 }
             )
 
@@ -504,6 +536,11 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
                     "event_type",
                     "CONNECTED"
                 ),
+                "is_active":
+                event.get(
+                    "is_active",
+                    False
+                )
             })
         )
 
@@ -532,5 +569,36 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
 
                 "event_type":
                 event["event_type"],
+                "audit_id":
+                event.get(
+                    "audit_id"
+                ),
+
+                "evidence_url":
+                event.get(
+                    "evidence_url"
+                ),
+                "log_timestamp":
+                event.get(
+                    "log_timestamp"
+                )
+            })
+        )
+
+    async def student_status_update(self, event):
+
+        if not self.is_proctor:
+            return
+
+        await self.send(
+            text_data=json.dumps({
+                "type":
+                "student_status_update",
+
+                "full_session_id":
+                event["full_session_id"],
+
+                "is_active":
+                event["is_active"]
             })
         )

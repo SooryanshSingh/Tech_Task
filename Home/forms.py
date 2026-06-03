@@ -6,7 +6,7 @@ from .models import Exam, Question, Answer, ProctorEmail
 
 class CustomUserCreationForm(UserCreationForm):
     ROLE_CHOICES = (
-        ('Company', 'Test Maker'),
+        ('Company', 'Test Admin'),
         ('Student', 'Student'),
     )
     role = forms.ChoiceField(choices=ROLE_CHOICES)

@@ -251,7 +251,74 @@
         return image
     }
 
-    function emitViolation(
+    let phoneDetectionCounter = 0;
+
+    async function detectPhone() {
+    
+        const image =
+            captureEvidence();
+    
+        if (!image) {
+            return;
+        }
+    
+        const formData =
+            new FormData();
+    
+        formData.append(
+            "image",
+            image
+        );
+    
+        const response =
+            await fetch(
+                "/realtime/api/detect-phone/",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+    
+        const result =
+            await response.json();
+    
+        console.log(
+            "[PHONE DETECTOR]",
+            result
+        );
+    
+        if (
+            result.phone_detected
+        ) {
+    
+            phoneDetectionCounter++;
+    
+            console.log(
+                "[PHONE STREAK]",
+                phoneDetectionCounter,
+                result.confidence
+            );
+    
+        } else {
+    
+            phoneDetectionCounter = 0;
+        }
+    
+        if (
+            phoneDetectionCounter >= 2
+        ) {
+    
+            emitViolation(
+                "PHONE_DETECTED",
+                {
+                    confidence:
+                        result.confidence
+                }
+            );
+    
+            phoneDetectionCounter = 0;
+        }
+    }    function emitViolation(
         eventType,
         metadata = {}
     ) {
@@ -456,7 +523,10 @@ async function monitorFace() {
         multipleFaceCounter = 0;
     }
 }
-  
+setInterval(
+    detectPhone,
+    15000
+);
 
     setInterval(
         monitorFace,

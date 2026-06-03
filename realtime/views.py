@@ -7,8 +7,12 @@ from django.utils.timezone import now
 from agora_token_builder import RtcTokenBuilder
 import time
 from django.conf import settings
-
-
+from .services.phone_detector import (
+    session,
+    decode_base64_image,
+    preprocess_image,
+    detect_phone_from_output
+)
 
 @login_required
 def test_with_chat(request, exam_id):
@@ -78,7 +82,6 @@ def proctor(request, exam_id, session_id):
 
 @login_required
 def proctor_dash(request, exam_id):
-    print("This one")
     is_proctor = request.user.groups.filter(name='Proctor').exists()
 
     if not is_proctor:
@@ -145,4 +148,65 @@ def get_agora_token(request, exam_id):
         "appId": app_id,
         "channel": channel_name,
         "uid": uid
+    })
+
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
+from .services.phone_detector import session
+from .services.phone_detector import (
+    decode_base64_image
+)
+
+@csrf_exempt
+@require_POST
+def detect_phone(request):
+
+    image_b64 = request.POST.get(
+        "image"
+    )
+    if not image_b64:
+
+        return JsonResponse(
+        {
+            "phone_detected": False,
+            "confidence": 0
+        },
+        status=400
+    )
+
+    img = decode_base64_image(
+        image_b64
+    )
+
+    input_tensor = preprocess_image(
+        img
+    )
+
+    outputs = session.run(
+        None,
+        {
+            "images":
+            input_tensor
+        }
+    )
+
+    phone_detected, confidence = (
+        detect_phone_from_output(
+            outputs
+        )
+    )
+    print(
+    "[PHONE DETECTED]",
+    phone_detected,
+    confidence
+)
+    return JsonResponse({
+        "phone_detected":
+            phone_detected,
+
+        "confidence":
+            confidence
     })

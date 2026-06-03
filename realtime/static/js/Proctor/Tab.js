@@ -5,6 +5,51 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!examIdElement || !timelineDiv) {
         return;
     }
+    function loadTimelineFromStorage() {
+
+        const stored =
+            JSON.parse(
+                localStorage.getItem(
+                    STORAGE_KEY
+                )
+            ) || [];
+    
+        stored.forEach(event => {
+    
+            const evidenceLink =
+                event.evidence_url
+                    ? `
+                        <a
+                            href="${event.evidence_url}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            View Evidence
+                        </a>
+                      `
+                    : "";
+    
+            const div =
+                document.createElement("div");
+    
+            div.classList.add(
+                "timeline-event"
+            );
+    
+            div.innerHTML =
+                `
+            <span class="time">
+                ${event.log_timestamp}
+            </span>                —
+                ${event.event_type}
+                ${evidenceLink}
+                `;
+    
+            timelineDiv.appendChild(
+                div
+            );
+        });
+    }
 
     const examId = parseInt(examIdElement.value);
     const pathParts = window.location.pathname.split("/");
@@ -16,30 +61,58 @@ document.addEventListener("DOMContentLoaded", function () {
         return new Date().toLocaleTimeString();
     }
 
-    function addEventToTimeline(text) {
-        const time = getCurrentTime();
+    function addEventToTimeline(event) {
 
-        const div = document.createElement("div");
-        div.classList.add("timeline-event");
-        div.innerHTML = `<span class="time">${time}</span> — ${text}`;
-        timelineDiv.prepend(div);
-
-        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        stored.push({ time, text });
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+        const time =event.log_timestamp || getCurrentTime();    
+        const evidenceLink =
+            event.evidence_url
+                ? `
+                    <a
+                        href="${event.evidence_url}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        View Evidence
+                    </a>
+                  `
+                : "";
+    
+        const div =
+            document.createElement("div");
+    
+        div.classList.add(
+            "timeline-event"
+        );
+    
+        div.innerHTML =
+            `
+            <span class="time">
+                ${time}
+            </span>
+            —
+            ${event.event_type}
+            ${evidenceLink}
+            `;
+    
+        timelineDiv.prepend(
+            div
+        );
+    
+        const stored =
+            JSON.parse(
+                localStorage.getItem(
+                    STORAGE_KEY
+                )
+            ) || [];
+    
+        stored.push(event);
+    
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(stored)
+        );
     }
-
-    function loadTimelineFromStorage() {
-        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        stored.forEach(event => {
-            const div = document.createElement("div");
-            div.classList.add("timeline-event");
-            div.innerHTML = `<span class="time">${event.time}</span> — ${event.text}`;
-            timelineDiv.appendChild(div);
-        });
-    }
-
-    loadTimelineFromStorage();
+        loadTimelineFromStorage();
 
     const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
     const socket = new WebSocket(
@@ -49,12 +122,16 @@ document.addEventListener("DOMContentLoaded", function () {
     socket.onmessage = function (e) {
         const data = JSON.parse(e.data);
 
+    console.log(
+        "[TIMELINE WS]",
+        data
+    );
         if (
             data.type === "violation_update" &&
             data.full_session_id === sessionId
         ) {
             addEventToTimeline(
-                `${data.event_type}`
+                data
             );        }
     };
 });
