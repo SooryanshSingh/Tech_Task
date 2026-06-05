@@ -3,24 +3,47 @@ from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Exam, Question, Answer, ProctorEmail
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 class CustomUserCreationForm(UserCreationForm):
+
     ROLE_CHOICES = (
         ('Company', 'Test Admin'),
         ('Student', 'Student'),
     )
-    role = forms.ChoiceField(choices=ROLE_CHOICES)
+
+    role = forms.ChoiceField(
+        choices=ROLE_CHOICES
+    )
+
+    profile_image = forms.ImageField(
+        required=False
+    )
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2', 'role')
+
+        fields = (
+            'username',
+            'email',
+            'password1',
+            'password2',
+            'role',
+            'profile_image'
+        )
 
     def __init__(self, *args, **kwargs):
-        super(CustomUserCreationForm, self).__init__(*args, **kwargs)
-        for fieldname in ['username', 'password1', 'password2']:
+
+        super().__init__(*args, **kwargs)
+
+        for fieldname in [
+            'username',
+            'password1',
+            'password2'
+        ]:
             self.fields[fieldname].help_text = None
-
-
 
 class QuestionForm(forms.ModelForm):
     class Meta:

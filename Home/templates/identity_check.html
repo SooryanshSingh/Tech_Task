@@ -1,0 +1,57 @@
+{% extends "home.html" %}
+{% load static %}
+
+{% block title %}
+Identity Verification
+{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/identity_check.css' %}">
+
+
+{% endblock %}
+{% block content %}
+
+<input
+    type="hidden"
+    id="exam-id"
+    value="{{ exam.id }}"
+>
+
+<div class="container">
+
+    <h1 class="identity-title">
+        Identity Verification
+    </h1>
+
+    <p class="identity-subtitle">
+        Verify your identity before
+        entering the examination.
+    </p>
+    <div id="camera-status">
+        <span id="camera-dot"></span>
+        Camera Ready
+    </div>
+    
+    <div class="video-wrapper">
+        <video
+            id="video"
+            autoplay
+            playsinline
+        ></video>
+    </div>
+
+    <canvas
+        id="canvas"
+        style="display:none;"
+    ></canvas>
+
+    <button id="verify-btn">
+        Verify Identity
+    </button>
+
+    <p id="result"></p>
+
+</div>
+<script src="{% static 'js/identity_check.js' %}"></script>
+
+{% endblock %}

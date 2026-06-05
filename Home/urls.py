@@ -22,6 +22,9 @@ urlpatterns = [
     path('exams/questions/<int:exam_id>/delete/<int:question_id>/', views.question_delete, name='question_delete'), 
     path('company_dashboard/', views.company_dashboard, name='company_dashboard'),
     path('proctor_dashboard/', views.proctor_dashboard, name='proctor_dashboard'),
+    path("verify-identity/",views.verify_identity,name="verify_identity"),
+    path("verify/<int:exam_id>/",views.identity_check,name="identity_check")
+
 
 
 ]

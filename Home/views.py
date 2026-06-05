@@ -1,7 +1,8 @@
 from django.contrib.auth.models import Group, User
+
 from django.views.decorators.cache import cache_control
 from .models import Exam,Exam, Question, Answer, Mark
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 import json
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth import authenticate, login, logout
@@ -10,9 +11,9 @@ from .forms import CustomUserCreationForm
 from .forms import QuestionWithAnswersForm
 from .forms import ExamForm
 from .forms import ProctorEmailForm 
-from .models import ProctorEmail
+from .models import ProctorEmail, StudentProfile
 from django.utils import timezone  
-
+from .services.face_embedding import extract_embedding
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
     is_company = request.user.groups.filter(name='Company').exists()
@@ -62,53 +63,100 @@ def login_user(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def signup(request):
+
     if request.user.is_authenticated:
+
         if request.user.groups.filter(name='Student').exists():
             return redirect('dashboard')
-        elif request.user.groups.filter(name='Company').exists() and not request.user.groups.filter(name='Proctor').exists():
+
+        if request.user.groups.filter(name='Company').exists() and not request.user.groups.filter(name='Proctor').exists():
             return redirect('company_dashboard')
-        elif request.user.groups.filter(name='Proctor').exists():
+
+        if request.user.groups.filter(name='Proctor').exists():
             return redirect('proctor_dashboard')
-        else:
+
+        return redirect('home')
+
+    form = CustomUserCreationForm(
+        request.POST or None,
+        request.FILES or None
+    )
+
+    if request.method == "POST" and form.is_valid():
+
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password1']
+        role = form.cleaned_data['role']
+
+        embedding = None
+
+        if role == "Student":
+
+            embedding = extract_embedding(
+                form.cleaned_data["profile_image"]
+            )
+
+            if embedding is None:
+
+                form.add_error(
+                    "profile_image",
+                    "Exactly one clear face must be visible."
+                )
+
+                return render(
+                    request,
+                    "signup.html",
+                    {"form": form}
+                )
+
+        user = form.save()
+
+        if role == "Test Admin":
+
+            group, _ = Group.objects.get_or_create(name="Company")
+            user.groups.add(group)
+
+        elif role == "Student":
+
+            group, _ = Group.objects.get_or_create(name="Student")
+            user.groups.add(group)
+
+            StudentProfile.objects.create(
+                user=user,
+                profile_image=form.cleaned_data["profile_image"],
+                embedding=embedding.tolist()
+            )
+
+        if ProctorEmail.objects.filter(email=user.email).exists():
+
+            group, _ = Group.objects.get_or_create(name="Proctor")
+            user.groups.add(group)
+
+        user = authenticate(
+            username=username,
+            password=password
+        )
+
+        if user:
+
+            login(request, user)
+
+            if user.groups.filter(name='Student').exists():
+                return redirect('dashboard')
+
+            if user.groups.filter(name='Company').exists() and not user.groups.filter(name='Proctor').exists():
+                return redirect('company_dashboard')
+
+            if user.groups.filter(name='Proctor').exists():
+                return redirect('proctor_dashboard')
+
             return redirect('home')
 
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password1']
-            role = form.cleaned_data['role']
-            if role == 'Test Admin':
-                group, _ = Group.objects.get_or_create(name="Company")
-                user.groups.add(group)
-
-            elif role == 'Student':
-                group, _ = Group.objects.get_or_create(name="Student")
-                user.groups.add(group)
-
-            if ProctorEmail.objects.filter(email=user.email).exists():
-                group, _ = Group.objects.get_or_create(name="Proctor")
-                user.groups.add(group)
-
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                if user.groups.filter(name='Student').exists():
-                    return redirect('dashboard')
-                elif user.groups.filter(name='Company').exists() and not user.groups.filter(name='Proctor').exists():
-                    return redirect('company_dashboard')
-                elif user.groups.filter(name='Proctor').exists():
-                    return redirect('proctor_dashboard')
-                else:
-                    return redirect('home')
-            else:
-                return redirect('signup')
-    else:
-        form = CustomUserCreationForm()
-
-    return render(request, 'signup.html', {'form': form})
-
+    return render(
+        request,
+        'signup.html',
+        {'form': form}
+    )
 
 
 def dashboard(request):
@@ -136,7 +184,7 @@ def company_dashboard(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             ProctorEmail.objects.create(email=email, submitted_by=request.user)
-            form = ProctorEmailForm()  # Clear the form after submission
+            form = ProctorEmailForm()  
             return render(request, 'company_dashboard.html', {
                 'form': form, 
                 'success': True,
@@ -447,3 +495,106 @@ def question_delete(request, exam_id, question_id):
         return redirect('question_list', exam_id=exam_id)
 
     return redirect('question_list', exam_id=exam_id)
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from Home.models import StudentProfile
+import json
+import base64
+import tempfile
+
+
+
+from numpy.linalg import norm
+import numpy as np
+
+def cosine_similarity(a, b):
+
+    return np.dot(a, b) / (
+        norm(a) * norm(b)
+    )
+
+@login_required
+def verify_identity(request):
+
+    if request.method != "POST":
+        return JsonResponse(
+            {"verified": False},
+            status=400
+        )
+
+    try:
+
+        image_data = json.loads(request.body)["image"]
+
+        header, encoded = image_data.split(";base64,")
+
+        image_bytes = base64.b64decode(encoded)
+
+        with tempfile.NamedTemporaryFile(suffix=".jpg") as temp_file:
+
+            temp_file.write(image_bytes)
+            temp_file.flush()
+
+            live_embedding = (
+                extract_embedding(
+                    temp_file.name
+                )
+            )
+
+        if live_embedding is None:
+
+            return JsonResponse({
+                "verified": False,
+                "reason": "No face detected"
+            })
+        try:
+            profile = StudentProfile.objects.get(user=request.user)
+        except StudentProfile.DoesNotExist:
+
+            return JsonResponse({"verified": False,"reason": "Profile not found"})
+
+
+        stored_embedding = np.array(profile.embedding,dtype=np.float32)
+        similarity = float(cosine_similarity(live_embedding,stored_embedding))
+        print("The similarity is ",similarity)
+        return JsonResponse({
+
+            "verified":
+            similarity >= 0.55,
+
+            "similarity":
+            round(similarity, 3)
+        })
+
+    except Exception as e:
+
+        return JsonResponse(
+            {
+                "verified": False,
+                "error": str(e)
+            },
+            status=500
+        )
+    
+@login_required
+@login_required
+def identity_check(request, exam_id):
+
+    exam = get_object_or_404(
+        Exam,
+        id=exam_id
+    )
+
+    if exam.attempted:
+        return redirect("test_end",exam_id=exam.id
+        )
+
+    if not StudentProfile.objects.filter(
+        user=request.user
+    ).exists():
+
+        return HttpResponseForbidden("Face profile not found.")
+
+    return render(request,"identity_check.html",{"exam": exam}
+    )    

@@ -5,6 +5,23 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 
+
+
+class StudentProfile(models.Model):
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    profile_image = models.ImageField(
+        upload_to="student_profiles/"
+    )
+    embedding = models.JSONField(
+    null=True,
+    blank=True
+)
+    
 class Exam(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()

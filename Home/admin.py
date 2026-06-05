@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Exam, Question, Answer, Feedback,  Response, Mark,ProctorEmail, Timer
+from .models import Exam, Question, Answer, Feedback,  Response, Mark,ProctorEmail, Timer, StudentProfile
 from django.contrib import admin
 
 
@@ -12,6 +12,7 @@ admin.site.register(Response)
 admin.site.register(ProctorEmail)
 admin.site.register(Mark)
 admin.site.register(Timer)
+admin.site.register(StudentProfile)
 
 admin.site.site_header = "Exam Platform Admin"
 admin.site.site_title = "Exam Admin"

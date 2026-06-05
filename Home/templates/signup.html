@@ -6,7 +6,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <link rel="stylesheet" href="{% static 'css/signup.css' %}">
+    <script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const roleSelect =
+            document.getElementById(
+                "id_role"
+            );
+
+        const imageContainer =
+            document.getElementById(
+                "profile-image-container"
+            );
+
+        function toggleImageField() {
+
+            if (
+                roleSelect.value ===
+                "Student"
+            ) {
+
+                imageContainer.style.display =
+                    "block";
+
+            } else {
+
+                imageContainer.style.display =
+                    "none";
+            }
+        }
+
+        toggleImageField();
+
+        roleSelect.addEventListener(
+            "change",
+            toggleImageField
+        );
+    }
+);
+    </script>
 </head>
+
 <body>
     
     <div class="hero">
@@ -15,8 +58,13 @@
     </div>
     <div class="container">
         <div class="formdiv">
-            <form action="{% url 'signup' %}" method="POST" class="signup-form">         
-                 {% csrf_token %}
+            <form
+            action="{% url 'signup' %}"
+            method="POST"
+            enctype="multipart/form-data"
+            class="signup-form"
+        >                
+                {% csrf_token %}
                 {{ form.non_field_errors }}
                 <div class="forms">
                     {{ form.username.label_tag }}
@@ -47,6 +95,15 @@
                     </select>
                     {{ form.role.errors }}
                 </div>
+                <div
+                class="forms"
+                id="profile-image-container"
+                style="display:none;"
+            >
+                {{ form.profile_image.label_tag }}
+                {{ form.profile_image }}
+                {{ form.profile_image.errors }}
+            </div>
                 <button type="submit" class="btn btn-primary">Submit</button>
                 <br>
             </form>

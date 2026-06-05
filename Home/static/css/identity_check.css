@@ -1,0 +1,209 @@
+.container{
+
+    max-width:900px;
+
+    margin:60px auto;
+
+    padding:50px;
+
+    background:rgba(35,15,60,0.72);
+
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    border-radius:28px;
+
+    box-shadow:
+        0 20px 40px rgba(0,0,0,0.25);
+
+    text-align:center;
+}
+
+.identity-title{
+
+    font-size:3rem;
+
+    font-weight:800;
+
+    color:white;
+
+    margin-bottom:15px;
+}
+
+.identity-subtitle{
+
+    color:rgba(255,255,255,0.75);
+
+    font-size:1.1rem;
+
+    margin-bottom:35px;
+}
+
+.identity-title::after{
+
+    content:"";
+
+    display:block;
+
+    width:90px;
+
+    height:4px;
+
+    margin:18px auto 0;
+
+    border-radius:999px;
+
+    background:linear-gradient(
+        to right,
+        #ffb347,
+        #ff5f6d
+    );
+}
+
+.video-wrapper{
+
+    display:flex;
+
+    justify-content:center;
+
+    margin-bottom:30px;
+}
+
+#video{
+
+    width:100%;
+
+    max-width:650px;
+
+    border-radius:22px;
+
+    border:3px solid rgba(
+        255,
+        255,
+        255,
+        0.1
+    );
+
+    box-shadow:
+        0 15px 35px rgba(
+            0,
+            0,
+            0,
+            0.3
+        );
+}
+
+#verify-btn{
+
+    border:none;
+
+    padding:14px 30px;
+
+    border-radius:14px;
+
+    font-weight:700;
+
+    font-size:1rem;
+
+    color:white;
+
+    cursor:pointer;
+
+    background:linear-gradient(
+        to right,
+        #ffb347,
+        #ff5f6d
+    );
+
+    transition:0.25s;
+}
+
+#verify-btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 10px 20px rgba(
+            255,
+            95,
+            109,
+            0.3
+        );
+}
+
+#result{
+
+    margin-top:20px;
+
+    font-size:1rem;
+
+    font-weight:600;
+
+    color:#ffd369;
+}
+#camera-status{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:10px 18px;
+
+    margin-bottom:25px;
+
+    border-radius:999px;
+
+    background:rgba(
+        46,
+        204,
+        113,
+        0.15
+    );
+
+    color:#2ecc71;
+
+    font-weight:600;
+
+    border:1px solid rgba(
+        46,
+        204,
+        113,
+        0.25
+    );
+}
+
+#camera-dot{
+
+    width:12px;
+
+    height:12px;
+
+    border-radius:50%;
+
+    background:#2ecc71;
+
+    display:inline-block;
+
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+
+    0%{
+        opacity:1;
+        transform:scale(1);
+    }
+
+    50%{
+        opacity:0.5;
+        transform:scale(1.2);
+    }
+
+    100%{
+        opacity:1;
+        transform:scale(1);
+    }
+}

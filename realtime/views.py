@@ -14,6 +14,7 @@ from .services.phone_detector import (
     detect_phone_from_output
 )
 
+
 @login_required
 def test_with_chat(request, exam_id):
     exam = get_object_or_404(Exam, id=exam_id)
@@ -210,3 +211,66 @@ def detect_phone(request):
         "confidence":
             confidence
     })
+
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image
+from reportlab.lib.styles import getSampleStyleSheet
+from .models import ExamSession, ExamAuditLog
+
+@login_required
+def generate_report(request, exam_id):
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="exam_{exam_id}_report.pdf"'
+
+    pdf = SimpleDocTemplate(response)
+    styles = getSampleStyleSheet()
+
+    story = [
+        Paragraph(f"Exam {exam_id} Proctoring Report", styles["Title"]),
+        Spacer(1, 20)
+    ]
+
+    for session in ExamSession.objects.filter(exam_id=exam_id).select_related("user"):
+
+        story.extend([
+            Paragraph(f"Student: {session.user.username}", styles["Heading2"]),
+            Paragraph(f"Session ID: {session.session_id}", styles["Normal"]),
+            Paragraph(f"Status: {'Active' if session.is_active else 'Inactive'}", styles["Normal"]),
+            Paragraph(f"Violations: {session.violation_count}", styles["Normal"]),
+            Paragraph(f"Risk Score: {session.risk_score}", styles["Normal"]),
+            Paragraph(f"Latest Event: {session.latest_event}", styles["Normal"]),
+            Spacer(1, 10),
+            Paragraph("Timeline", styles["Heading3"])
+        ])
+
+        logs = ExamAuditLog.objects.filter(
+            session_id=session.session_id
+        ).order_by("timestamp")
+
+        for log in logs:
+
+            story.append(
+                Paragraph(
+                    f"{log.timestamp:%H:%M:%S} - {log.event_type} (Severity {log.severity})",
+                    styles["Normal"]
+                )
+            )
+
+            if log.evidence_image:
+
+                try:
+
+                    story.append(
+                        Image(log.evidence_image.path,width=180,height=120))
+
+                    story.append(Spacer(1, 10))
+
+                except Exception:
+                    pass
+
+        story.extend([Spacer(1, 20),PageBreak()])
+
+    pdf.build(story)
+    return response

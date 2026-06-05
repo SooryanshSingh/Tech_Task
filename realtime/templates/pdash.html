@@ -19,6 +19,16 @@
         <h1>
             Exam {{ exam_id }} – Live Proctor Dashboard
         </h1>
+        <div class="dashboard-actions">
+
+            <a
+                href="{% url 'generate_report' exam_id %}"
+                class="report-btn"
+            >
+                Download Report
+            </a>
+        
+        </div>
 
         <div class="table-card">
 
@@ -27,6 +37,7 @@
                 <thead>
                     <tr>
                         <th>Student Session</th>
+                        <th>Status</th>
                         <th>Violation Count</th>
                         <th>Risk Score</th>
                         <th>Latest Event</th>

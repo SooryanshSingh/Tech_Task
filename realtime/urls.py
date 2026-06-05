@@ -10,7 +10,8 @@ urlpatterns = [
         path('proctor/<int:exam_id>/dashboard', views.proctor_dash, name='Dash'),
         path('proctor/<int:exam_id>/session/<str:session_id>/data', views.proctor, name='proctor'),
         path("agora/token/<int:exam_id>/", get_agora_token),
-    path("api/detect-phone/",detect_phone,name="detect_phone")
+        path("api/detect-phone/",detect_phone,name="detect_phone"),
+        path("proctor/report/<int:exam_id>/",views.generate_report,name="generate_report")
 
 
 
