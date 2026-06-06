@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group, User
 
 from django.views.decorators.cache import cache_control
 from .models import Exam,Exam, Question, Answer, Mark
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 import json
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth import authenticate, login, logout
@@ -14,6 +14,12 @@ from .forms import ProctorEmailForm
 from .models import ProctorEmail, StudentProfile
 from django.utils import timezone  
 from .services.face_embedding import extract_embedding
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.urls import reverse
+
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
     is_company = request.user.groups.filter(name='Company').exists()
@@ -84,10 +90,7 @@ def signup(request):
 
     if request.method == "POST" and form.is_valid():
 
-        username = form.cleaned_data['username']
-        password = form.cleaned_data['password1']
         role = form.cleaned_data['role']
-
         embedding = None
 
         if role == "Student":
@@ -109,16 +112,24 @@ def signup(request):
                     {"form": form}
                 )
 
-        user = form.save()
+        user = form.save(commit=False)
+        user.is_active = False
+        user.save()
 
         if role == "Test Admin":
 
-            group, _ = Group.objects.get_or_create(name="Company")
+            group, _ = Group.objects.get_or_create(
+                name="Company"
+            )
+
             user.groups.add(group)
 
         elif role == "Student":
 
-            group, _ = Group.objects.get_or_create(name="Student")
+            group, _ = Group.objects.get_or_create(
+                name="Student"
+            )
+
             user.groups.add(group)
 
             StudentProfile.objects.create(
@@ -127,39 +138,55 @@ def signup(request):
                 embedding=embedding.tolist()
             )
 
-        if ProctorEmail.objects.filter(email=user.email).exists():
+        if ProctorEmail.objects.filter(
+            email=user.email
+        ).exists():
 
-            group, _ = Group.objects.get_or_create(name="Proctor")
+            group, _ = Group.objects.get_or_create(
+                name="Proctor"
+            )
+
             user.groups.add(group)
 
-        user = authenticate(
-            username=username,
-            password=password
+        uid = urlsafe_base64_encode(
+            force_bytes(user.pk)
         )
 
-        if user:
+        token = default_token_generator.make_token(
+            user
+        )
 
-            login(request, user)
+        verify_link = request.build_absolute_uri(
+            reverse(
+                "verify_email",
+                args=[uid, token]
+            )
+        )
 
-            if user.groups.filter(name='Student').exists():
-                return redirect('dashboard')
+        send_mail(
+            "Verify Your Email",
+            f"Click the link below to verify your account:\n\n{verify_link}",
+            None,
+            [user.email]
+        )
 
-            if user.groups.filter(name='Company').exists() and not user.groups.filter(name='Proctor').exists():
-                return redirect('company_dashboard')
-
-            if user.groups.filter(name='Proctor').exists():
-                return redirect('proctor_dashboard')
-
-            return redirect('home')
+        return render(
+            request,
+            "verification_sent.html",
+            {
+                "email": user.email
+            }
+        )
 
     return render(
         request,
-        'signup.html',
-        {'form': form}
+        "signup.html",
+        {"form": form}
     )
-
-
 def dashboard(request):
+    if not request.user.groups.filter(name='Student').exists():
+        return redirect('home')
+
     user = request.user
     current_time = timezone.now()
     
@@ -179,6 +206,10 @@ def dashboard(request):
     return render(request, 'dashboard.html', context)
 
 def company_dashboard(request):
+    if not request.user.groups.filter(name='Company').exists():
+        return redirect('home')
+
+
     if request.method == 'POST':
         form = ProctorEmailForm(request.POST)
         if form.is_valid():
@@ -240,50 +271,113 @@ def exam_detail(request, exam_id):
     return render(request, 'exam_list.html', {'exam': exam})
 
 
+from django.urls import reverse
+from django.http import JsonResponse
+from django.shortcuts import render
+import json
+
+from .forms import ExamForm
+from .models import ExamInvite
+from .services.email_service import send_exam_invite
+
+
 def exam_create(request):
+
     if request.method == 'POST':
+
         try:
             data = json.loads(request.body)
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+            print(data)
 
-        exam_data_list = data.get('exams', [])
+        except json.JSONDecodeError:
+
+            return JsonResponse(
+                {'error': 'Invalid JSON'},
+                status=400
+            )
+
+        exam_data_list = data.get(
+            'exams',
+            []
+        )
+
         created_exams = []
 
         for exam_data in exam_data_list:
+
             form = ExamForm(exam_data)
-            if form.is_valid():
-                exam = form.save(commit=False)
-                exam.company = request.user
-                exam.save()
 
-                email_list = form.cleaned_data.get('email_list', '')
-                raw_emails = email_list.split(',')
+            if not form.is_valid():
 
-                for email in raw_emails:
-                    email = email.strip().lower()
-                    if not email:
-                        continue
+                return JsonResponse(
+                    {
+                        'error':
+                        'Invalid exam entry',
 
-                    user = User.objects.filter(email=email).first()
-                    if user:
-                        exam.examinees.add(user)
-                    else:
-                        print(f"No user found with email: {email}")
+                        'details':
+                        form.errors
+                    },
+                    status=400
+                )
 
+            exam = form.save(commit=False)
 
-                created_exams.append(exam.id)
-            else:
-                return JsonResponse({
-                    'error': 'Invalid exam entry',
-                    'details': form.errors
-                }, status=400)
+            exam.company = request.user
 
-        return JsonResponse({'message': f'{len(created_exams)} exams created successfully', 'ids': created_exams})
+            exam.save()
 
-    else:  
-        form = ExamForm()
-        return render(request, 'exam_create.html', {'form': form})
+            email_list = form.cleaned_data.get(
+                'email_list',
+                ''
+            )
+
+            emails = [
+                email.strip().lower()
+                for email in email_list.splitlines()
+                if email.strip()
+            ]
+
+            for email in emails:
+
+                invite = ExamInvite.objects.create(
+                    exam=exam,
+                    email=email
+                )
+
+                invite_link = (
+                    request.build_absolute_uri(
+                        reverse(
+                            "accept_invite",
+                            args=[invite.token]
+                        )
+                    )
+                )
+
+                send_exam_invite(email,invite_link)
+
+            created_exams.append(exam.id)
+
+        print(form.errors)
+        return JsonResponse(
+            {
+                'message':
+                f'{len(created_exams)} exams created successfully',
+
+                'ids':
+                created_exams
+            }
+        )
+        
+
+    form = ExamForm()
+
+    return render(
+        request,
+        'exam_create.html',
+        {
+            'form': form
+        }
+    )
 def exam_update(request, exam_id):
     try:
         exam = get_object_or_404(Exam, pk=exam_id)
@@ -598,3 +692,52 @@ def identity_check(request, exam_id):
 
     return render(request,"identity_check.html",{"exam": exam}
     )    
+
+
+@login_required
+def accept_invite(request, token):
+
+    invite = get_object_or_404(
+        ExamInvite,
+        token=token,
+        used=False
+    )
+
+    invite.exam.examinees.add(
+        request.user
+    )
+
+    invite.used = True
+    invite.accepted_by = request.user
+    invite.save()
+
+    return redirect("dashboard")
+
+
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+def verify_email(request,uidb64,token):
+
+    try:
+
+        uid = (urlsafe_base64_decode(uidb64).decode()
+        )
+
+        user = User.objects.get(pk=uid)
+
+    except Exception:
+
+        user = None
+
+    if (user and default_token_generator.check_token(user,token)):
+
+        user.is_active = True
+        user.save()
+
+        return redirect("login")
+
+    return HttpResponse("Invalid verification link.")

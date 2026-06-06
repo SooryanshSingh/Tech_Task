@@ -73,6 +73,7 @@ class QuestionWithAnswersForm(forms.Form):
     correct_option = forms.ChoiceField(choices=CORRECT_CHOICES, widget=forms.RadioSelect)
 
 class ExamForm(forms.ModelForm):
+
     start_time = forms.DateTimeField(
         widget=forms.DateTimeInput(
             attrs={'type': 'datetime-local'},
@@ -81,6 +82,7 @@ class ExamForm(forms.ModelForm):
         input_formats=['%Y-%m-%dT%H:%M'],
         required=True
     )
+
     end_time = forms.DateTimeField(
         widget=forms.DateTimeInput(
             attrs={'type': 'datetime-local'},
@@ -89,20 +91,33 @@ class ExamForm(forms.ModelForm):
         input_formats=['%Y-%m-%dT%H:%M'],
         required=True
     )
-    duration = forms.IntegerField(help_text="Duration in minutes")
+
+    duration = forms.IntegerField(
+        help_text="Duration in minutes"
+    )
+
     email_list = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 3}),
+        widget=forms.Textarea(
+            attrs={
+                'rows': 5,
+                'placeholder':
+                'alice@gmail.com\nbob@gmail.com\ncharlie@gmail.com'
+            }
+        ),
         required=False,
-        help_text="Use comma"
+        help_text="One email per line"
     )
 
     class Meta:
         model = Exam
-        fields = ['title', 'description', 'start_time', 'end_time', 'duration', 'email_list']
 
-
-
-
+        fields = [
+            'title',
+            'description',
+            'start_time',
+            'end_time',
+            'duration'
+        ]
 
 class ProctorEmailForm(forms.ModelForm):
     class Meta:

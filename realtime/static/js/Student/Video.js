@@ -318,7 +318,8 @@
     
             phoneDetectionCounter = 0;
         }
-    }    function emitViolation(
+    }    
+    function emitViolation(
         eventType,
         metadata = {}
     ) {

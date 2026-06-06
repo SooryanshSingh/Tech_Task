@@ -16,6 +16,7 @@
           {% csrf_token %}
           <button type="submit">Delete</button>
         </form>
+        
         <a href="{% url 'question_update' exam_id question.id %}">Update</a>
       </li>
     {% endfor %}

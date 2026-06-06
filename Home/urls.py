@@ -23,8 +23,7 @@ urlpatterns = [
     path('company_dashboard/', views.company_dashboard, name='company_dashboard'),
     path('proctor_dashboard/', views.proctor_dashboard, name='proctor_dashboard'),
     path("verify-identity/",views.verify_identity,name="verify_identity"),
-    path("verify/<int:exam_id>/",views.identity_check,name="identity_check")
-
-
-
+    path("verify/<int:exam_id>/",views.identity_check,name="identity_check"),
+    path("invite/<uuid:token>/",views.accept_invite,name="accept_invite"),
+    path("verify-email/<uidb64>/<token>/",views.verify_email,name="verify_email")
 ]

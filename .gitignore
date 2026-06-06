@@ -8,8 +8,10 @@ __pycache__/
 *.pyo
 
 # Django static & media
+venv/
 staticfiles/
 media/
+
 
 # Database
 db.sqlite3

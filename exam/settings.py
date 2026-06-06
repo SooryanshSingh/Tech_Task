@@ -14,15 +14,20 @@ import os
 from pathlib import Path
 import dj_database_url
 
-SECRET_KEY = "django-insecure-dev-key"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-AGORA_APP_ID = "ba895e4e800d4249837ad0a2ff5f06cc"
-AGORA_APP_CERT = "2f7a1ce814e04ef0a5dda1d5fbb92dfe"
+AGORA_APP_ID = os.environ.get("AGORA_APP_ID")
+AGORA_APP_CERT = os.environ.get("AGORA_APP_CERT")
 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
-
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -91,11 +96,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'exam.wsgi.application'
 ASGI_APPLICATION= 'exam.asgi.application'
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [("127.0.0.1", 6379)],
+            },
+        },
+    }
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

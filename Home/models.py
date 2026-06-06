@@ -89,3 +89,32 @@ class Timer(models.Model):
 
         elapsed_time = (now() - self.start_time).total_seconds()
         return max(0, self.exam.duration * 60 - elapsed_time)
+
+
+import uuid
+
+class ExamInvite(models.Model):
+
+    exam = models.ForeignKey(
+        Exam,
+        on_delete=models.CASCADE
+    )
+
+    email = models.EmailField()
+
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False
+    )
+
+    used = models.BooleanField(
+        default=False
+    )
+
+    accepted_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )

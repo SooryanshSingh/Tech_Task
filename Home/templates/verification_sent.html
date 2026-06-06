@@ -1,0 +1,125 @@
+{% extends "home.html" %}
+{% load static %}
+
+{% block title %}
+Email Verification
+{% endblock %}
+
+{% block content %}
+
+<div class="container verification-container">
+
+    <div class="verification-card">
+
+        <div class="mail-icon">
+            📧
+        </div>
+
+        <h1>
+            Verification Email Sent
+        </h1>
+
+        <p class="subtitle">
+            We've sent a verification link to
+        </p>
+
+        <p class="email">
+            {{ email }}
+        </p>
+
+        <p class="message">
+            Please check your inbox and click the
+            verification link to activate your account.
+        </p>
+
+        <p class="note">
+            You won't be able to log in until your
+            email has been verified.
+        </p>
+
+        <a href="{% url 'login' %}" class="back-btn">
+            Back to Login
+        </a>
+
+    </div>
+
+</div>
+
+<style>
+
+.verification-container{
+    min-height:80vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.verification-card{
+    width:100%;
+    max-width:700px;
+    padding:50px;
+    text-align:center;
+    background:rgba(35,15,60,0.72);
+    backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:28px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.25);
+}
+
+.mail-icon{
+    font-size:4rem;
+    margin-bottom:20px;
+}
+
+.verification-card h1{
+    font-size:2.8rem;
+    margin-bottom:15px;
+}
+
+.subtitle{
+    color:rgba(255,255,255,0.75);
+    font-size:1.1rem;
+}
+
+.email{
+    margin:20px 0;
+    font-size:1.25rem;
+    font-weight:700;
+    color:#ffd369;
+    word-break:break-word;
+}
+
+.message{
+    color:rgba(255,255,255,0.85);
+    line-height:1.7;
+    margin-bottom:15px;
+}
+
+.note{
+    color:rgba(255,255,255,0.65);
+    margin-bottom:35px;
+}
+
+.back-btn{
+    display:inline-block;
+    padding:14px 24px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:700;
+    color:white;
+    background:linear-gradient(
+        to right,
+        #ffb347,
+        #ff5f6d
+    );
+    transition:0.2s;
+}
+
+.back-btn:hover{
+    transform:translateY(-2px);
+    opacity:0.95;
+}
+
+</style>
+
+{% endblock %}
