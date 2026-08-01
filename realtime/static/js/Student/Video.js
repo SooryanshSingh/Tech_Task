@@ -2,6 +2,15 @@
 
 (async function () {
 
+    function getCookie(name) {
+        const prefix = `${name}=`;
+        const value = document.cookie
+            .split(";")
+            .map(cookie => cookie.trim())
+            .find(cookie => cookie.startsWith(prefix));
+        return value ? decodeURIComponent(value.slice(prefix.length)) : "";
+    }
+
     console.log("[STUDENT] Init start");
 
     /* =========================
@@ -275,6 +284,9 @@
                 "/realtime/api/detect-phone/",
                 {
                     method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
                     body: formData
                 }
             );

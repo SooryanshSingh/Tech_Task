@@ -36,6 +36,37 @@ class Exam(models.Model):
     def __str__(self):
         return self.title
 
+
+class ExamAttempt(models.Model):
+    class Status(models.TextChoices):
+        NOT_STARTED = "NOT_STARTED", "Not started"
+        IN_PROGRESS = "IN_PROGRESS", "In progress"
+        SUBMITTED = "SUBMITTED", "Submitted"
+        TERMINATED = "TERMINATED", "Terminated"
+
+    exam = models.ForeignKey(
+        Exam, on_delete=models.CASCADE, related_name="attempts"
+    )
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="exam_attempts"
+    )
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.NOT_STARTED
+    )
+    started_at = models.DateTimeField(null=True, blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    score = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("exam", "student"), name="unique_exam_attempt_per_student"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.exam} - {self.student} ({self.status})"
+
 class Question(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
@@ -51,6 +82,13 @@ class Feedback(models.Model):
     rating = models.IntegerField(choices=[(1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5')])
 
 class Response(models.Model):
+    attempt = models.ForeignKey(
+        ExamAttempt,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="responses",
+    )
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='responses')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='responses')
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='responses')
@@ -59,6 +97,13 @@ class Response(models.Model):
     def __str__(self):
         return f"Response for question: {self.question.text} by {self.student.username}"
 class Mark(models.Model):
+    attempt = models.OneToOneField(
+        ExamAttempt,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="mark",
+    )
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='marks')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     marks = models.IntegerField(default=0)

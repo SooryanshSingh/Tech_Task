@@ -1,4 +1,4 @@
-import onnxruntime as ort
+from functools import lru_cache
 from django.conf import settings
 import os
 import cv2
@@ -16,9 +16,12 @@ MODEL_PATH = os.path.join(
     "models",
     "yolov8n.onnx"
 )
-session = ort.InferenceSession(
-    MODEL_PATH
-)
+@lru_cache(maxsize=1)
+def get_phone_session():
+    """Load ONNX Runtime and the model on first inference, not at server import."""
+    import onnxruntime as ort
+
+    return ort.InferenceSession(MODEL_PATH)
 
 
 
