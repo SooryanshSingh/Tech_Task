@@ -1,170 +1,189 @@
-# Online Examination & Real-Time Proctoring System
+# TestPro – AI-Assisted Online Examination & Remote Proctoring System
 
+TestPro is a production-grade online examination and AI-assisted remote proctoring platform built with Django, Django Channels, WebSockets, and Agora RTC.
 
+The platform enables secure remote examinations with real-time communication between students and proctors while leveraging computer vision for automated proctoring. It combines backend-controlled exam workflows, live monitoring, audit logging, and AI-assisted violation detection in a scalable architecture.
 
-- A production-grade online examination and real-time proctoring platform built with Django, WebSockets, and Agora RTC.
-
-- Designed with a strong focus on real-time system behavior, secure role-based access control, and scalable 1:N exam monitoring, this project goes beyond traditional CRUD applications to solve real-world proctoring challenges.
-
-
-**Deployed Link= https://testpro-z569.onrender.com/**
+---
 
 # Features
-## Core Exam System
+
+## Online Examination
 
 - Role-based authentication (Student, Test Maker, Proctor)
+- Email verification for student registration
+- MCQ-based examinations
+- Server-controlled exam timer
+- Automatic submission on timeout
+- Secure result generation and storage
+- Candidate assignment through invitation workflow
 
-- MCQ-based exams
-
-- Server-controlled exam timer (backend enforced)
-
-- Auto submission on timeout or exam close
-
-- Secure result calculation & storage
+---
 
 ## Test Maker
 
-- Create / edit / delete exams
+- Create, edit, and delete exams
+- Manage question bank
+- Schedule exams
+- Assign students and proctors
+- View exam results and marks
 
-- Bulk question creation
+---
 
-- Schedule exams (date, time, duration)
+## Student Portal
 
-- Assign proctors via email
-
-- View student marks
-
-
-## Student
-
-- Exam dashboard with question navigation
-
-- Real-time timer synced with backend
-
-- Tab-change detection
-
-- Live camera streaming during exam
-
-- Warning alerts from proctor
-
+- Interactive examination dashboard
+- Backend-synchronized countdown timer
+- Question navigation
+- Live camera streaming during examinations
+- Real-time warning notifications
+- Automatic exam submission
 - Forced exam termination handling
+- Tab-switch monitoring
 
-## Proctoring (Real-Time)
+---
 
-- 1:N proctor dashboard
+## Real-Time Proctor Dashboard
 
-- Live list of active students
+- 1:N proctor-to-student monitoring
+- Live student video feeds
+- Real-time violation dashboard
+- Student warning system
+- Remote exam termination
+- Evidence viewing
+- Live audit updates
 
-- Violation count per student
+---
 
-- Click-to-zoom student camera feed
+## AI-Assisted Proctoring
 
-- Warn student (real-time alert)
+- Face verification before examination
+- No-face detection
+- Multiple-face detection
+- Mobile phone detection using YOLOv8
+- BlazeFace-based face detection
+- Tab-switch detection
+- Violation scoring
+- Evidence capture and logging
 
-- Force close exam
+---
 
-## Audit & Security
+## Security & Audit
 
-- Exam audit logs (actions, actors, targets, timestamps)
+- Django Groups based RBAC
+- Secure WebSocket authentication
+- Exam audit logs
+- Environment-based configuration
+- Evidence storage for violations
 
-- Django Groups for RBAC
-
-- Secure WebSocket permission checks
-
-- Environment-based secrets management
-
-
+---
 
 # Tech Stack
 
 ## Backend
 
-- **Django** 
+- Django
+- Django Channels
+- Daphne
+- PostgreSQL
+- Agora RTC SDK
+- WebSockets
 
-- **Django Channels**
+## AI & Computer Vision
 
-- **PostgreSQL**
-
-- **Whitenoise**
-
-- **Render (Deployment)**
-
-- **Agora RTC SDK**
-
-- **WebSockets**
+- YOLOv8
+- BlazeFace (MediaPipe)
+- OpenCV
 
 ## Frontend
 
-- HTML, CSS
+- HTML
+- CSS
+- JavaScript
+- Fetch API
+- WebSocket API
 
-- Vanilla JavaScript
+---
 
-- Fetch API & WebSocket API
+# Architecture Highlights
+
+- ASGI-based real-time backend using Django Channels
+- Backend-controlled examination lifecycle
+- Event-driven proctor dashboard
+- Real-time bidirectional communication
+- AI-assisted violation detection pipeline
+
+---
 
 # Environment Variables
 
-- DJANGO_SECRET_KEY=your-secret-key
-- DEBUG=False
-- DATABASE_URL=postgres://...
-- AGORA_APP_ID=your-agora-app-id
-- AGORA_APP_CERT=your-agora-app-certificate
+```env
+DJANGO_SECRET_KEY=
+DEBUG=False
 
+DATABASE_URL=
 
-# Deployment
+AGORA_APP_ID=
+AGORA_APP_CERTIFICATE=
 
-- Hosted on Render
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+```
 
-- PostgreSQL database
-
-- ASGI enabled for WebSockets
-
-- Static files served via Whitenoise
+---
 
 # What This Project Demonstrates
 
-- Real-time system design
+- Full-stack web development
+- Real-time distributed systems
+- WebSocket communication
+- AI-assisted computer vision integration
+- Secure authentication and authorization
+- Production-ready backend architecture
+- Cloud deployment readiness
+- Scalable online examination workflows
 
-- WebSocket-based communication
+---
 
-- Scalable video proctoring (1:N)
+# Design Decisions
 
-- Secure role-based architecture
+### Why Agora instead of raw WebRTC?
 
-- Production deployment readiness
+Agora simplifies large-scale real-time communication by providing reliable signaling, reconnection handling, and media transport, allowing the application to focus on examination logic instead of low-level networking.
 
-- Auditability & reliability
+---
+
+### Why Django Channels?
+
+Django Channels enables HTTP requests and persistent WebSocket connections within the same framework, simplifying permission management and real-time communication.
+
+---
 
 
 
+### Why Backend-Controlled Timers?
 
-# Design Decisions & Trade-offs
+Exam timing is enforced on the server to prevent client-side tampering and ensure fairness across all participants.
 
-- **Why Agora instead of raw WebRTC**  
-  Raw WebRTC became complex to maintain for multi-user (1:N) joins, reconnections, and ordering issues. Agora provides stable signaling, scaling, and media reliability while keeping control logic server-driven.
+---
 
-- **Why backend-enforced timer**  
-  Client-side timers are unreliable and tamperable. Time remaining is computed server-side and polled by clients, ensuring fairness and preventing manipulation.
+### Why Audit Logs?
 
-- **Why WebSockets over polling**  
-  WebSockets allow instant propagation of proctor actions (warn, close), tab-change violations, and live dashboard updates without delay or excessive network overhead.
+Every important examination event is recorded to provide traceability, transparency, and post-exam review capability.
 
-- **Why audit logs instead of only counters**  
-  Audit logs provide traceability and post-exam review capability, essential for real-world compliance and dispute resolution.
+---
 
-- **Why Django Channels (ASGI)**  
-  Enables a single-stack solution for HTTP + real-time communication, simplifying deployment and permission enforcement.
+### Why AI-Assisted Proctoring?
 
+Computer vision automatically detects suspicious behavior such as mobile phone usage, missing faces, and multiple faces, reducing manual monitoring effort while assisting human proctors.
+
+---
 
 # Future Improvements
 
-- Detect if no face or multiple faces appear during the exam and log it as a violation.
-
-- Detect screen minimization, fullscreen exit, or screen sharing attempts.
-
-- Automatically restore student exam state after accidental refresh or network drop.
-
-- Allow proctors to add short notes during the exam for post-exam review.
-
-- Move WebSocket channel layer to Redis for large-scale concurrent exams.
-
-
+- Eye-gaze estimation
+- Head pose estimation
+- Browser lockdown support
+- Automatic reconnection after network failures
+- Exam analytics dashboard
+- Distributed deployment using Docker and Kubernetes
