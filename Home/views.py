@@ -267,7 +267,7 @@ def exam_list(request):
 
 
 def exam_detail(request, exam_id):
-    exam = Exam.objects.get(pk=exam_id)
+    exam = get_object_or_404(Exam, pk=exam_id, company=request.user)
     return render(request, 'exam_list.html', {'exam': exam})
 
 
@@ -282,6 +282,9 @@ from .services.email_service import send_exam_invite
 
 
 def exam_create(request):
+
+    if not request.user.is_authenticated or not request.user.groups.filter(name="Company").exists():
+        return JsonResponse({"error": "forbidden"}, status=403)
 
     if request.method == 'POST':
 
@@ -680,9 +683,15 @@ def identity_check(request, exam_id):
         id=exam_id
     )
 
-    if exam.attempted:
-        return redirect("test_end",exam_id=exam.id
-        )
+    if not request.user.groups.filter(name="Student").exists():
+        return HttpResponseForbidden("Only students can verify for an exam.")
+    if not exam.examinees.filter(pk=request.user.pk).exists():
+        return HttpResponseForbidden("You are not assigned to this exam.")
+    if exam.attempts.filter(
+        student=request.user,
+        status__in=("SUBMITTED", "TERMINATED"),
+    ).exists():
+        return redirect("test_end", exam_id=exam.id)
 
     if not StudentProfile.objects.filter(
         user=request.user
@@ -702,6 +711,9 @@ def accept_invite(request, token):
         token=token,
         used=False
     )
+
+    if invite.email.lower() != request.user.email.lower():
+        return HttpResponseForbidden("This invitation belongs to another email address.")
 
     invite.exam.examinees.add(
         request.user

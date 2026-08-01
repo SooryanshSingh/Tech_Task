@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from .face_model import app
+from .face_model import get_face_app
 
 
 def verify_face(
@@ -11,7 +11,7 @@ def verify_face(
 
     img = cv2.imread(image_path)
 
-    faces = app.get(img)
+    faces = get_face_app().get(img)
 
     if len(faces) == 0:
         return False

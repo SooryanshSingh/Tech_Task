@@ -3,6 +3,9 @@ from collections import defaultdict
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from django.db import transaction
+from django.db.models import F
+from Home.models import Exam, ProctorEmail
 
 from .models import (
     ExamAuditLog,
@@ -38,6 +41,23 @@ ALLOWED_EVIDENCE_EVENTS = {
 class ExamControlConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
+    def access_role(self):
+        user = self.scope["user"]
+        if not user.is_authenticated:
+            return None
+        exam = Exam.objects.filter(pk=self.exam_id).first()
+        if not exam:
+            return None
+        if exam.examinees.filter(pk=user.pk).exists():
+            return "student"
+        if (
+            user.groups.filter(name="Proctor").exists()
+            and ProctorEmail.objects.filter(email=user.email, submitted_by=exam.company).exists()
+        ) or user.pk == exam.company_id:
+            return "proctor"
+        return None
+
+    @database_sync_to_async
     def log_event(
         self,
         event_type,
@@ -63,7 +83,14 @@ class ExamControlConsumer(AsyncWebsocketConsumer):
         )
 
     async def connect(self):
+        self.authorized = False
         self.exam_id = self.scope['url_route']['kwargs']['exam_id']
+
+        self.role = await self.access_role()
+        if not self.role:
+            await self.close(code=4403)
+            return
+        self.authorized = True
 
         self.room_group_name = f'exam_{self.exam_id}'
 
@@ -75,12 +102,18 @@ class ExamControlConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
+        if not getattr(self, "authorized", False):
+            return
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
     async def receive(self, text_data):
+
+        if self.role != "proctor":
+            await self.close(code=4403)
+            return
 
         data = json.loads(text_data)
 
@@ -235,22 +268,13 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
         event_type
         ):
 
-        session.violation_count += 1
-
-        session.risk_score += severity
-
-        session.latest_event = event_type
-
-        session.save(
-        update_fields=[
-            "violation_count",
-            "risk_score",
-            "latest_event"
-        ]
-        )
-
-        
-        return session
+        with transaction.atomic():
+            ExamSession.objects.filter(pk=session.pk).update(
+                violation_count=F("violation_count") + 1,
+                risk_score=F("risk_score") + severity,
+                latest_event=event_type,
+            )
+            return ExamSession.objects.get(pk=session.pk)
     
     @database_sync_to_async
     def mark_inactive(self):
@@ -264,13 +288,24 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def check_is_proctor(self):
+        if not self.user.is_authenticated:
+            return False
+        exam = Exam.objects.filter(pk=self.exam_id).first()
+        return bool(exam and (
+            self.user.pk == exam.company_id
+            or (
+                self.user.groups.filter(name="Proctor").exists()
+                and ProctorEmail.objects.filter(
+                    email=self.user.email, submitted_by=exam.company
+                ).exists()
+            )
+        ))
 
+    @database_sync_to_async
+    def check_is_student(self):
         return (
             self.user.is_authenticated
-            and
-            self.user.groups.filter(
-                name="Proctor"
-            ).exists()
+            and Exam.objects.filter(pk=self.exam_id, examinees=self.user).exists()
         )
     @database_sync_to_async
     def evidence_count(self):
@@ -280,6 +315,8 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
     ).exclude(evidence_image__isnull=True).count()
 
     async def connect(self):
+
+        self.authorized = False
 
         self.exam_id = self.scope['url_route']['kwargs']['exam_id']
 
@@ -296,6 +333,11 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
         self.is_proctor = (
             await self.check_is_proctor()
         )
+
+        if not self.is_proctor and not await self.check_is_student():
+            await self.close(code=4403)
+            return
+        self.authorized = True
 
         if self.is_proctor:
 
@@ -391,6 +433,9 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
                 
     async def disconnect(self, close_code):
 
+        if not getattr(self, "authorized", False):
+            return
+
         if self.is_proctor:
 
             await self.channel_layer.group_discard(
@@ -430,6 +475,9 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
         if data.get("type") == "violation":
 
             event_type = data.get("event")
+            if event_type not in VIOLATION_WEIGHTS:
+                await self.send(text_data=json.dumps({"type": "error", "error": "invalid_event"}))
+                return
             evidence = data.get(
                 "evidence"
             )
