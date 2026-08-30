@@ -72,6 +72,14 @@ class QuestionWithAnswersForm(forms.Form):
     ]
     correct_option = forms.ChoiceField(choices=CORRECT_CHOICES, widget=forms.RadioSelect)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        option_names = ("option_a", "option_b", "option_c", "option_d")
+        options = [cleaned_data.get(name, "").strip() for name in option_names]
+        if all(options) and len({option.casefold() for option in options}) != 4:
+            raise forms.ValidationError("All four answer options must be unique.")
+        return cleaned_data
+
 class ExamForm(forms.ModelForm):
 
     start_time = forms.DateTimeField(

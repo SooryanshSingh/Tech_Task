@@ -120,8 +120,11 @@ The platform enables secure remote examinations with real-time communication bet
 ```env
 DJANGO_SECRET_KEY=
 DEBUG=False
+ALLOWED_HOSTS=exam.example.com
 
 DATABASE_URL=
+REDIS_URL=redis://redis:6379/0
+CELERY_BROKER_URL=redis://redis:6379/1
 
 AGORA_APP_ID=
 AGORA_APP_CERTIFICATE=
@@ -129,6 +132,25 @@ AGORA_APP_CERTIFICATE=
 EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
 ```
+
+Run the web application and asynchronous report worker as separate processes:
+
+```bash
+python manage.py migrate
+daphne exam.asgi:application
+celery -A exam worker --loglevel=INFO
+```
+
+`requirements.in` lists direct dependencies, while `requirements.txt` is the
+Python 3.12 lock file used for reproducible deployments. Regenerate the lock
+after intentionally changing a direct dependency and run the Django test suite
+before deployment.
+
+Browser-side MediaPipe imports are pinned to an exact version. The application
+also sends a Content Security Policy header that limits scripts and connections
+to the application, Agora, and jsDelivr. Inline scripts remain temporarily
+allowed for the existing templates and should be moved to static files before
+removing `'unsafe-inline'` from the policy.
 
 ---
 

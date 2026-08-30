@@ -27,6 +27,10 @@ class ExamSession(models.Model):
         default=0
     )
 
+    evidence_count = models.PositiveIntegerField(
+        default=0
+    )
+
     latest_event = models.CharField(
         max_length=50,
         default="CONNECTED"
@@ -71,3 +75,28 @@ class ExamAuditLog(models.Model):
         null=True,
         blank=True
     )
+
+
+class ExamReport(models.Model):
+    class Status(models.TextChoices):
+        QUEUED = "QUEUED", "Queued"
+        PROCESSING = "PROCESSING", "Processing"
+        READY = "READY", "Ready"
+        FAILED = "FAILED", "Failed"
+
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="reports")
+    requested_by = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="requested_exam_reports",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.QUEUED,
+    )
+    file = models.FileField(upload_to="exam_reports/", null=True, blank=True)
+    error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)

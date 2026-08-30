@@ -10,11 +10,11 @@
 {% block content %}
 <div class="hero"><h2 >Exam Marks</h2></div>
 
-{% for marks in marks %}
+{% for attempt in attempts %}
     <div class="marks-card">
-        <h3 class="examtitle">Exam name: {{ marks.exam.title }}</h3>
-        <p>Exam Taker: {{ marks.user }}</p>
-        <p>Marks: {{ marks.marks }}</p>
+        <h3 class="examtitle">Exam name: {{ attempt.exam.title }}</h3>
+        <p>Exam Taker: {{ attempt.student }}</p>
+        <p>Marks: {{ attempt.score }}</p>
     </div>
 {% empty %}
     <p >No exams found.</p>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Exam, Question, Answer, Feedback,  Response, Mark,ProctorEmail, Timer, StudentProfile
+from .models import Exam, Question, Answer, Feedback, Response, ProctorEmail, Timer, StudentProfile
 from django.contrib import admin
 
 
@@ -10,7 +10,6 @@ admin.site.register(Answer)
 admin.site.register(Feedback)
 admin.site.register(Response)
 admin.site.register(ProctorEmail)
-admin.site.register(Mark)
 admin.site.register(Timer)
 admin.site.register(StudentProfile)
 

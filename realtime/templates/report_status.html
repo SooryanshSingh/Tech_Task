@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proctoring report</title>
+    {% if report.status == "QUEUED" or report.status == "PROCESSING" %}
+        <meta http-equiv="refresh" content="2">
+    {% endif %}
+</head>
+<body>
+    <main>
+        <h1>{{ report.exam.title }} report</h1>
+        <p>Status: {{ report.get_status_display }}</p>
+
+        {% if report.status == "READY" %}
+            <a href="{% url 'download_report' report.id %}">Download report</a>
+        {% elif report.status == "FAILED" %}
+            <p>The report could not be generated. Please try again.</p>
+        {% else %}
+            <p>This page will refresh automatically.</p>
+        {% endif %}
+    </main>
+</body>
+</html>

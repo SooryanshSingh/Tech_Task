@@ -1,12 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
-from Home.models import Exam, ExamAttempt, Answer, Response, Mark, ProctorEmail
+from django.http import FileResponse, HttpResponseForbidden
+from Home.models import Exam, ExamAttempt, Answer, Response, ProctorEmail
 from django.http import JsonResponse
 from django.utils import timezone
 from django.db import transaction
 from datetime import timedelta
-from agora_token_builder import RtcTokenBuilder
 import time
 from django.conf import settings
 from .services.phone_detector import (
@@ -24,6 +23,20 @@ def test_with_chat(request, exam_id):
         return HttpResponseForbidden("Only students can attempt an exam.")
     if not exam.examinees.filter(pk=request.user.pk).exists():
         return HttpResponseForbidden("You are not assigned to this exam.")
+
+    if exam.closed_at:
+        ExamAttempt.objects.filter(
+            exam=exam,
+            student=request.user,
+            status__in=(
+                ExamAttempt.Status.NOT_STARTED,
+                ExamAttempt.Status.IN_PROGRESS,
+            ),
+        ).update(
+            status=ExamAttempt.Status.TERMINATED,
+            submitted_at=exam.closed_at,
+        )
+        return redirect('test_end', exam_id=exam.id)
 
     current_time = timezone.now()
     if current_time < exam.start_time or current_time > exam.end_time:
@@ -62,11 +75,6 @@ def test_with_chat(request, exam_id):
 
             attempt.responses.all().delete()
             Response.objects.bulk_create(responses)
-            Mark.objects.update_or_create(
-                attempt=attempt,
-                defaults={"exam": exam, "user": request.user,
-                          "marks": total_marks, "company": exam.company},
-            )
             attempt.status = ExamAttempt.Status.SUBMITTED
             attempt.score = total_marks
             attempt.submitted_at = timezone.now()
@@ -134,6 +142,20 @@ def get_remaining_time(request, exam_id):
     if not exam.examinees.filter(pk=request.user.pk).exists():
         return JsonResponse({"error": "not assigned"}, status=403)
 
+    if exam.closed_at:
+        ExamAttempt.objects.filter(
+            exam=exam,
+            student=request.user,
+            status__in=(
+                ExamAttempt.Status.NOT_STARTED,
+                ExamAttempt.Status.IN_PROGRESS,
+            ),
+        ).update(
+            status=ExamAttempt.Status.TERMINATED,
+            submitted_at=exam.closed_at,
+        )
+        return JsonResponse({"remaining_time": 0, "closed": True})
+
     with transaction.atomic():
         attempt, _ = ExamAttempt.objects.select_for_update().get_or_create(
             exam=exam, student=request.user
@@ -157,6 +179,8 @@ def get_remaining_time(request, exam_id):
 
 
 def get_agora_token(request, exam_id):
+    from agora_token_builder import RtcTokenBuilder
+
     user = request.user
     if not user.is_authenticated:
         return JsonResponse({"error": "unauth"}, status=401)
@@ -171,7 +195,7 @@ def get_agora_token(request, exam_id):
         return JsonResponse({"error": "forbidden"}, status=403)
 
     app_id = settings.AGORA_APP_ID
-    app_cert = settings.AGORA_APP_CERT
+    app_cert = settings.AGORA_APP_CERTIFICATE
 
     channel_name = f"exam_{exam_id}"
     uid = user.id  
@@ -258,72 +282,57 @@ def detect_phone(request):
             confidence
     })
 
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Image
-from reportlab.lib.styles import getSampleStyleSheet
-from .models import ExamSession, ExamAuditLog
+from .models import ExamReport
+from .tasks import generate_exam_report
+
+
+def _can_view_report(user, exam):
+    return user == exam.company or ProctorEmail.objects.filter(
+        email=user.email,
+        submitted_by=exam.company,
+    ).exists()
 
 @login_required
 def generate_report(request, exam_id):
-
     exam = get_object_or_404(Exam, pk=exam_id)
-    is_authorized = request.user == exam.company or ProctorEmail.objects.filter(
-        email=request.user.email, submitted_by=exam.company
-    ).exists()
-    if not is_authorized:
+    if not _can_view_report(request.user, exam):
         return HttpResponseForbidden("You are not authorized to view this report.")
 
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="exam_{exam_id}_report.pdf"'
+    with transaction.atomic():
+        report = ExamReport.objects.create(
+            exam=exam,
+            requested_by=request.user,
+        )
+        transaction.on_commit(lambda: generate_exam_report.delay(report.pk))
 
-    pdf = SimpleDocTemplate(response)
-    styles = getSampleStyleSheet()
+    return redirect("report_status", report_id=report.pk)
 
-    story = [
-        Paragraph(f"Exam {exam_id} Proctoring Report", styles["Title"]),
-        Spacer(1, 20)
-    ]
 
-    for session in ExamSession.objects.filter(exam_id=exam_id).select_related("user"):
+@login_required
+def report_status(request, report_id):
+    report = get_object_or_404(
+        ExamReport.objects.select_related("exam"),
+        pk=report_id,
+    )
+    if not _can_view_report(request.user, report.exam):
+        return HttpResponseForbidden("You are not authorized to view this report.")
+    return render(request, "report_status.html", {"report": report})
 
-        story.extend([
-            Paragraph(f"Student: {session.user.username}", styles["Heading2"]),
-            Paragraph(f"Session ID: {session.session_id}", styles["Normal"]),
-            Paragraph(f"Status: {'Active' if session.is_active else 'Inactive'}", styles["Normal"]),
-            Paragraph(f"Violations: {session.violation_count}", styles["Normal"]),
-            Paragraph(f"Risk Score: {session.risk_score}", styles["Normal"]),
-            Paragraph(f"Latest Event: {session.latest_event}", styles["Normal"]),
-            Spacer(1, 10),
-            Paragraph("Timeline", styles["Heading3"])
-        ])
 
-        logs = ExamAuditLog.objects.filter(
-            session_id=session.session_id
-        ).order_by("timestamp")
+@login_required
+def download_report(request, report_id):
+    report = get_object_or_404(
+        ExamReport.objects.select_related("exam"),
+        pk=report_id,
+        status=ExamReport.Status.READY,
+    )
+    if not _can_view_report(request.user, report.exam):
+        return HttpResponseForbidden("You are not authorized to view this report.")
 
-        for log in logs:
-
-            story.append(
-                Paragraph(
-                    f"{log.timestamp:%H:%M:%S} - {log.event_type} (Severity {log.severity})",
-                    styles["Normal"]
-                )
-            )
-
-            if log.evidence_image:
-
-                try:
-
-                    story.append(
-                        Image(log.evidence_image.path,width=180,height=120))
-
-                    story.append(Spacer(1, 10))
-
-                except Exception:
-                    pass
-
-        story.extend([Spacer(1, 20),PageBreak()])
-
-    pdf.build(story)
-    return response
+    report_file = report.file.open("rb")
+    return FileResponse(
+        report_file,
+        as_attachment=True,
+        filename=f"exam_{report.exam_id}_report.pdf",
+        content_type="application/pdf",
+    )
