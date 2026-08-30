@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, User
 
 from django.views.decorators.cache import cache_control
-from .models import Exam,Exam, Question, Answer, Mark
+from .models import Exam, ExamAttempt, Question
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 import json
 from django.shortcuts import render, redirect,get_object_or_404
@@ -19,6 +19,12 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 from django.urls import reverse
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from .services.question_service import (
+    delete_question as delete_question_service,
+    save_question_with_answers,
+)
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
@@ -116,7 +122,7 @@ def signup(request):
         user.is_active = False
         user.save()
 
-        if role == "Test Admin":
+        if role == "Company":
 
             group, _ = Group.objects.get_or_create(
                 name="Company"
@@ -248,10 +254,12 @@ def proctor_dashboard(request):
         return redirect('home')
 def marks_view(request):
     if request.user.groups.filter(name='Company').exists():
-        marks = Mark.objects.filter(company=request.user)
-        context = {'marks': marks}
+        attempts = ExamAttempt.objects.filter(
+            exam__company=request.user,
+            status=ExamAttempt.Status.SUBMITTED,
+        ).select_related("exam", "student")
+        context = {'attempts': attempts}
 
-        print("This",marks)
         return render(request, 'marks.html', context)
     else:
         return redirect('home')
@@ -439,51 +447,26 @@ def question_create(request, exam_id):
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-        created_questions = []
-
+        validated_questions = []
         for i, q in enumerate(questions_data):
             form = QuestionWithAnswersForm(q)
             if form.is_valid():
-                # Ensure all 4 options are present
-                if not all([
-                    form.cleaned_data.get('option_a'),
-                    form.cleaned_data.get('option_b'),
-                    form.cleaned_data.get('option_c'),
-                    form.cleaned_data.get('option_d')
-                ]):
-                    return JsonResponse({
-                        'error': f'All four options are required at index {i}.'
-                    }, status=400)
-
-                question = Question.objects.create(
-                    exam=exam,
-                    text=form.cleaned_data['text']
-                )
-
-                options = [
-                    ('A', form.cleaned_data['option_a']),
-                    ('B', form.cleaned_data['option_b']),
-                    ('C', form.cleaned_data['option_c']),
-                    ('D', form.cleaned_data['option_d']),
-                ]
-
-                answers = [
-                    Answer(
-                        question=question,
-                        text=opt_text,
-                        is_correct=(form.cleaned_data['correct_option'].upper() == opt_key)
-                    )
-                    for opt_key, opt_text in options
-                ]
-
-                Answer.objects.bulk_create(answers)
-                created_questions.append(question)
+                validated_questions.append(form.cleaned_data)
 
             else:
                 return JsonResponse({
                     'error': f'Invalid question at index {i}',
                     'details': form.errors
                 }, status=400)
+
+        try:
+            with transaction.atomic():
+                created_questions = [
+                    save_question_with_answers(exam=exam, cleaned_data=cleaned_data)
+                    for cleaned_data in validated_questions
+                ]
+        except ValidationError as exc:
+            return JsonResponse({"error": exc.messages[0]}, status=409)
 
         return JsonResponse({'message': f'{len(created_questions)} questions created successfully.'})
 
@@ -512,33 +495,21 @@ def question_update(request, exam_id, question_id):
             form = QuestionWithAnswersForm(request.POST)
 
         if form.is_valid():
-            question.text = form.cleaned_data['text']
-            question.save()
-
-            options = [
-                ('A', form.cleaned_data['option_a']),
-                ('B', form.cleaned_data['option_b']),
-                ('C', form.cleaned_data['option_c']),
-                ('D', form.cleaned_data['option_d']),
-            ]
-
-            existing_answers = list(question.answers.all().order_by('id'))
-
-            if len(existing_answers) == 4:
-                for i, (opt_key, opt_text) in enumerate(options):
-                    existing_answers[i].text = opt_text
-                    existing_answers[i].is_correct = (form.cleaned_data['correct_option'] == opt_key)
-                    existing_answers[i].save()
-            else:
-                question.answers.all().delete()
-                Answer.objects.bulk_create([
-                    Answer(
-                        question=question,
-                        text=opt_text,
-                        is_correct=(form.cleaned_data['correct_option'] == opt_key)
-                    )
-                    for opt_key, opt_text in options
-                ])
+            try:
+                save_question_with_answers(
+                    exam=exam,
+                    question=question,
+                    cleaned_data=form.cleaned_data,
+                )
+            except ValidationError as exc:
+                if request.headers.get('Content-Type') == 'application/json':
+                    return JsonResponse({'error': exc.messages[0]}, status=409)
+                form.add_error(None, exc.messages[0])
+                return render(request, 'question_update.html', {
+                    'form': form,
+                    'exam': exam,
+                    'question': question,
+                }, status=409)
 
             if request.headers.get('Content-Type') == 'application/json':
                 return JsonResponse({'message': f'Question {question_id} updated successfully.'})
@@ -588,7 +559,10 @@ def question_delete(request, exam_id, question_id):
     question = get_object_or_404(Question, pk=question_id, exam=exam)
 
     if request.method == 'POST':
-        question.delete()
+        try:
+            delete_question_service(exam=exam, question=question)
+        except ValidationError as exc:
+            messages.error(request, exc.messages[0])
         return redirect('question_list', exam_id=exam_id)
 
     return redirect('question_list', exam_id=exam_id)

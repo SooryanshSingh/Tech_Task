@@ -1,8 +1,11 @@
 
 
 
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
+from django.utils import timezone
 from django.utils.timezone import now
 
 
@@ -31,10 +34,37 @@ class Exam(models.Model):
     end_time = models.DateTimeField(null=False, blank=False)
     duration = models.PositiveIntegerField(help_text="Duration in minutes")
     attempted = models.BooleanField(default=False)  
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(end_time__gt=models.F("start_time")),
+                name="exam_end_after_start",
+            ),
+            models.CheckConstraint(
+                condition=Q(duration__gt=0),
+                name="exam_duration_positive",
+            ),
+        ]
 
 
     def __str__(self):
         return self.title
+
+    @property
+    def questions_are_locked(self):
+        return bool(
+            self.closed_at
+            or self.start_time <= timezone.now()
+            or self.attempts.exclude(status=ExamAttempt.Status.NOT_STARTED).exists()
+        )
+
+    def assert_questions_editable(self):
+        if self.questions_are_locked:
+            raise ValidationError(
+                "Questions cannot be changed after the exam has started."
+            )
 
 
 class ExamAttempt(models.Model):
@@ -75,6 +105,15 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("question",),
+                condition=Q(is_correct=True),
+                name="unique_correct_answer_per_question",
+            )
+        ]
 class Feedback(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='feedbacks')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -96,19 +135,6 @@ class Response(models.Model):
 
     def __str__(self):
         return f"Response for question: {self.question.text} by {self.student.username}"
-class Mark(models.Model):
-    attempt = models.OneToOneField(
-        ExamAttempt,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name="mark",
-    )
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='marks')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    marks = models.IntegerField(default=0)
-    company = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True, related_name='company_marks')
-
 class ProctorEmail(models.Model):
     email = models.EmailField(unique=True)
     submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='proctor_emails')

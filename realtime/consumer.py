@@ -1,19 +1,18 @@
+import base64
+import binascii
 import json
-from collections import defaultdict
+import uuid
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.db import transaction
-from django.db.models import F
-from Home.models import Exam, ProctorEmail
+from Home.models import Exam, ExamAttempt, ProctorEmail
+from django.utils import timezone
 
 from .models import (
     ExamAuditLog,
     ExamSession
 )
-import base64
-import uuid
-
 from django.core.files.base import ContentFile
 
 
@@ -25,7 +24,7 @@ VIOLATION_WEIGHTS = {
     "PHONE_DETECTED": 40,
 
 }
-MAX_EVIDENCE_SIZE = 500_000
+MAX_EVIDENCE_BYTES = 500_000
 
 MAX_EVIDENCE_PER_SESSION = 50
 
@@ -82,6 +81,40 @@ class ExamControlConsumer(AsyncWebsocketConsumer):
             metadata=metadata or {}
         )
 
+    @database_sync_to_async
+    def terminate_exam(self):
+        now = timezone.now()
+        with transaction.atomic():
+            exam = Exam.objects.select_for_update().get(pk=self.exam_id)
+            already_closed = exam.closed_at is not None
+            if not already_closed:
+                exam.closed_at = now
+                exam.save(update_fields=["closed_at"])
+
+            terminated_count = ExamAttempt.objects.filter(
+                exam=exam,
+                status__in=(
+                    ExamAttempt.Status.NOT_STARTED,
+                    ExamAttempt.Status.IN_PROGRESS,
+                ),
+            ).update(
+                status=ExamAttempt.Status.TERMINATED,
+                submitted_at=now,
+            )
+
+            ExamAuditLog.objects.create(
+                exam=exam,
+                actor=self.scope["user"],
+                event_type="EXAM_CLOSED",
+                severity=100,
+                metadata={
+                    "exam_id": exam.pk,
+                    "terminated_attempts": terminated_count,
+                    "already_closed": already_closed,
+                },
+            )
+        return terminated_count
+
     async def connect(self):
         self.authorized = False
         self.exam_id = self.scope['url_route']['kwargs']['exam_id']
@@ -118,20 +151,14 @@ class ExamControlConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
 
         if data.get("type") == "close_exam":
-
-            await self.log_event(
-                event_type="EXAM_CLOSED",
-                severity=100,
-                metadata={
-                    "exam_id": self.exam_id
-                }
-            )
+            terminated_count = await self.terminate_exam()
 
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     "type":
-                    "exam_closed"
+                    "exam_closed",
+                    "terminated_attempts": terminated_count,
                 }
             )
 
@@ -158,7 +185,8 @@ class ExamControlConsumer(AsyncWebsocketConsumer):
         await self.send(
             text_data=json.dumps({
                 "type":
-                "exam_closed"
+                "exam_closed",
+                "terminated_attempts": event.get("terminated_attempts", 0),
             })
         )
 
@@ -195,86 +223,54 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
 
         return session    
     
+    @staticmethod
+    def _decode_evidence(event_type, evidence_image):
+        if not evidence_image or event_type not in ALLOWED_EVIDENCE_EVENTS:
+            return None
+        try:
+            _, encoded = evidence_image.split(";base64,", 1)
+            image_bytes = base64.b64decode(encoded, validate=True)
+        except (ValueError, binascii.Error):
+            return None
+        if len(image_bytes) > MAX_EVIDENCE_BYTES:
+            return None
+        return ContentFile(image_bytes, name=f"{uuid.uuid4()}.jpg")
+
     @database_sync_to_async
-    def log_event(
-    self,
-    event_type,
-    severity,
-    metadata=None,
-    evidence_image=None):
-
-        log = ExamAuditLog.objects.create(
-        exam_id=self.exam_id,
-
-        actor=(
-            self.user
-            if self.user.is_authenticated
-            else None
-        ),
-
-        session_id=self.session_id,
-
-        event_type=event_type,
-
-        severity=severity,
-
-        metadata=metadata or {}
-    )
-
-        if evidence_image:
-
-            try:
-                if event_type not in ALLOWED_EVIDENCE_EVENTS:
-
-                    evidence_image = None
-                if evidence_image:
-
-                    if len(evidence_image) > MAX_EVIDENCE_SIZE:
-
-                        print("[EVIDENCE] Too large")
-
-                        evidence_image = None
-
-                    if evidence_image:
-
-                        header, imgstr = evidence_image.split(
-                    ";base64,"
-                    )
-
-                        file = ContentFile(
-                        base64.b64decode(imgstr),
-                        name=f"{uuid.uuid4()}.jpg"
-                    )
-
-                        log.evidence_image.save(
-                        file.name,
-                        file,
-                        save=True
-                    )
-            except Exception as e:
-
-                print(
-                "[EVIDENCE SAVE ERROR]",
-                e
-            )
-
-        return log
-    
-    @database_sync_to_async
-    def update_session(
-        self,
-        session,
-        severity,
-        event_type
-        ):
+    def record_violation(self, session, event_type, severity, evidence_image=None):
+        evidence_file = self._decode_evidence(event_type, evidence_image)
 
         with transaction.atomic():
-            ExamSession.objects.filter(pk=session.pk).update(
-                violation_count=F("violation_count") + 1,
-                risk_score=F("risk_score") + severity,
-                latest_event=event_type,
+            session = ExamSession.objects.select_for_update().get(pk=session.pk)
+            session.violation_count += 1
+            session.risk_score += severity
+            session.latest_event = event_type
+
+            if session.evidence_count >= MAX_EVIDENCE_PER_SESSION:
+                evidence_file = None
+
+            log = ExamAuditLog(
+                exam_id=self.exam_id,
+                actor=self.user,
+                session_id=self.session_id,
+                event_type=event_type,
+                severity=severity,
+                metadata={"risk_score": session.risk_score},
             )
-            return ExamSession.objects.get(pk=session.pk)
+            if evidence_file:
+                log.evidence_image.save(evidence_file.name, evidence_file, save=False)
+                session.evidence_count += 1
+
+            log.save()
+            session.save(
+                update_fields=(
+                    "violation_count",
+                    "risk_score",
+                    "latest_event",
+                    "evidence_count",
+                )
+            )
+        return session, log
     
     @database_sync_to_async
     def mark_inactive(self):
@@ -307,13 +303,6 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
             self.user.is_authenticated
             and Exam.objects.filter(pk=self.exam_id, examinees=self.user).exists()
         )
-    @database_sync_to_async
-    def evidence_count(self):
-
-        return ExamAuditLog.objects.filter(
-        session_id=self.session_id
-    ).exclude(evidence_image__isnull=True).count()
-
     async def connect(self):
 
         self.authorized = False
@@ -494,29 +483,11 @@ class TabMonitorConsumer(AsyncWebsocketConsumer):
 
             session = await self.get_or_create_session()
 
-            session = await self.update_session(session,severity,event_type)            
-            
-            
-            
-            evidence_count = (
-                await self.evidence_count()
-            )
-
-            if (
-                evidence_count >=
-                MAX_EVIDENCE_PER_SESSION
-            ):
-                evidence = None
-            log = await self.log_event(
+            session, log = await self.record_violation(
+                session=session,
                 event_type=event_type,
-
                 severity=severity,
-
-                metadata={
-                    "risk_score":
-                    session.risk_score
-                },
-                evidence_image = evidence
+                evidence_image=evidence,
             )
 
             await self.channel_layer.group_send(
